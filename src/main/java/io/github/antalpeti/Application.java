@@ -21,6 +21,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import io.github.antalpeti.constant.TextConstant;
+
 public class Application {
 
   private static Display display;
@@ -178,27 +180,27 @@ public class Application {
   }
 
   private String removeBoldItalicTags(String text) {
-    while (hasBoldItalicTagFront(text) || hasBoldItalicTagBack(text)) {
-      text = hasBoldItalicTagFront(text) ? removeBoldItalicTagFront(text) : text;
-      text = hasBoldItalicTagBack(text) ? removeBoldItalicTagBack(text) : text;
+    while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text)) {
+      text = hasBoldItalicOpenTag(text) ? removeBoldItalicOpenTag(text) : text;
+      text = hasBoldItalicCloseTag(text) ? removeBoldItalicBoldTag(text) : text;
     }
     return text;
   }
 
-  private boolean hasBoldItalicTagFront(String text) {
-    return text.length() > 3 && text.matches("^(<i>|<b>)+.*");
+  private boolean hasBoldItalicOpenTag(String text) {
+    return text.length() > 3 && text.matches(".*(<i>|<b>)+.*");
   }
 
-  private String removeBoldItalicTagFront(String text) {
-    return text.substring(3);
+  private String removeBoldItalicOpenTag(String text) {
+    return text.replaceAll("(<i>|<b>)", TextConstant.EMPTY_STRING);
   }
 
-  private boolean hasBoldItalicTagBack(String text) {
-    return text.length() > 3 && text.matches(".*(<\\/i>|<\\/b>)+$");
+  private boolean hasBoldItalicCloseTag(String text) {
+    return text.length() > 3 && text.matches(".*(<\\/i>|<\\/b>)+.*");
   }
 
-  private String removeBoldItalicTagBack(String text) {
-    return text.substring(0, text.length() - 4);
+  private String removeBoldItalicBoldTag(String text) {
+    return text.replaceAll("(<\\/i>|<\\/b>)", TextConstant.EMPTY_STRING);
   }
 
   <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
