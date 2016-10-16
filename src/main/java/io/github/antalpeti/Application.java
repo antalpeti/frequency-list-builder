@@ -4,6 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -98,12 +103,12 @@ public class Application {
     FileDialog dialog = new FileDialog(shell, SWT.OPEN);
     dialog.setText("Open");
     String[] filterNames = new String[] {"Subtitle Files", "All Files (*)"};
-    String[] filterExtensions = new String[] {"*.srt;*.sub", "*"};
+    String[] filterExtensions = new String[] {"*.srt", "*"};
     String filterPath = "/";
     String platform = SWT.getPlatform();
     if (platform.equals("win32")) {
       filterNames = new String[] {"Subtitle Files", "All Files (*.*)"};
-      filterExtensions = new String[] {"*.srt;*.sub", "*.*"};
+      filterExtensions = new String[] {"*.srt", "*.*"};
       filterPath = "c:\\";
     }
     dialog.setFilterNames(filterNames);
@@ -123,17 +128,56 @@ public class Application {
 
       try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"))) {
         String line;
+        TreeMap<String, Integer> wordFrequency = new TreeMap<>();
+
         while ((line = br.readLine()) != null) {
           line = line.trim();
 
-          if (!line.isEmpty() && !Character.isDigit(line.charAt(0))) {
-            contents.append(line + "\n");
+          boolean emptyLine = line.isEmpty();
+          boolean srtTime = line.matches("[\\d:,\\s->]*");
+
+          if (!emptyLine && !srtTime) {
+            String[] words = line.split("\\s");
+            for (String word : words) {
+              word = word.toLowerCase();
+              while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
+                word = word.substring(1);
+              }
+              while (word.length() > 0 && word.matches(".*[\"\\)\\]\\}\\.,\\?!:$]+$")) {
+                word = word.substring(0, word.length() - 1);
+              }
+
+              Integer occurence = wordFrequency.get(word);
+              if (occurence == null) {
+                occurence = new Integer(0);
+              }
+              wordFrequency.put(word, ++occurence);
+            }
           }
+        }
+
+        int wordNumber = 0;
+        for (Map.Entry<String, Integer> entry : entriesSortedByValues(wordFrequency)) {
+          String key = entry.getKey();
+          Integer value = entry.getValue();
+          contents.append(++wordNumber + " " + key + "   " + value + "\n");
         }
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
     return contents.toString();
+  }
+
+  <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
+    SortedSet<Map.Entry<K, V>> sortedEntries = new TreeSet<Map.Entry<K, V>>(new Comparator<Map.Entry<K, V>>() {
+      @Override
+      public int compare(Map.Entry<K, V> entry1, Map.Entry<K, V> entry2) {
+        int result = entry1.getValue().compareTo(entry2.getValue());
+        return result != 0 ? -result : 1;
+      }
+    });
+    sortedEntries.addAll(map.entrySet());
+    return sortedEntries;
   }
 }
