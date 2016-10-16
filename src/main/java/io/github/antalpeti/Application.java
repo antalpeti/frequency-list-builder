@@ -3,6 +3,7 @@ package io.github.antalpeti;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
@@ -18,7 +19,7 @@ public class Application {
     init();
     Application application = new Application();
 
-    GridLayout layout = new GridLayout(2, false);
+    GridLayout layout = new GridLayout(2, true);
     shell.setLayout(layout);
 
     initButtons(application);
@@ -35,7 +36,19 @@ public class Application {
   private static void initDirectoryButton(Application application) {
     Button selectFiles = new Button(shell, SWT.PUSH);
     selectFiles.setText("File(s)");
+    selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     selectFiles.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        application.openFileDialogForDirectory(shell);
+      }
+    });
+    shell.setDefaultButton(selectFiles);
+
+    Button selectDirectory = new Button(shell, SWT.PUSH);
+    selectDirectory.setText("Directory");
+    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    selectDirectory.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         application.openFileDialogForDirectory(shell);
