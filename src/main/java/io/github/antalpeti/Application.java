@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import io.github.antalpeti.constant.DirectionOrder;
+import io.github.antalpeti.util.CharacterRemover;
 import io.github.antalpeti.util.TagRemover;
 import io.github.antalpeti.util.Util;
 
@@ -145,31 +146,31 @@ public class Application {
     try {
       file = new File(pathname);
 
+
       try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"))) {
         String line;
         TreeMap<String, Integer> wordFrequency = new TreeMap<>();
 
         int processedWordNumber = 0;
+        TagRemover tagRemover = TagRemover.getInstance();
+        CharacterRemover characterRemover = CharacterRemover.getInstance();
+
         while ((line = br.readLine()) != null) {
           line = line.trim();
 
           boolean emptyLine = line.isEmpty();
-          boolean srtTime = line.matches("[\\d:,\\s->]*");
+          boolean srtTimeLine = line.matches("[\\d:,\\s->]*");
 
-          if (!emptyLine && !srtTime) {
+          if (!emptyLine && !srtTimeLine) {
             line = line.toLowerCase();
-            line = TagRemover.getInstance().removeBoldItalicFontTags(line);
+            line = tagRemover.removeBoldItalicFontOpenAndCloseTags(line);
 
             String[] words = line.split("\\s");
             for (String word : words) {
-              word = TagRemover.getInstance().removeBoldItalicFontTags(word);
+              word = tagRemover.removeBoldItalicFontOpenAndCloseTags(word);
 
-              while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
-                word = word.substring(1);
-              }
-              while (word.length() > 0 && word.matches(".*[\"\\)\\]\\}\\.,\\?!:$]+$")) {
-                word = word.substring(0, word.length() - 1);
-              }
+              word = characterRemover.removeFrontAndBackSpecialCharacters(word);
+
               if (word.length() > 0 && word.matches("-+")) {
                 word = word.replaceAll("-", "");
               }

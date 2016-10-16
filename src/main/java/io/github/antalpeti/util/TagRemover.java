@@ -14,7 +14,7 @@ public class TagRemover {
     return instance;
   }
 
-  public String removeBoldItalicFontTags(String text) {
+  public String removeBoldItalicFontOpenAndCloseTags(String text) {
     while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text) || hasFontColorOpenTag(text)
         || hasFontCloseTag(text)) {
       text = hasBoldItalicOpenTag(text) ? removeBoldItalicOpenTag(text) : text;
