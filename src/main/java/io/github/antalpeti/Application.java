@@ -1,5 +1,10 @@
 package io.github.antalpeti;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -9,56 +14,70 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 public class Application {
 
   private static Display display;
   private static Shell shell;
+  private static Application application;
+  private static Text text;
 
   public static void main(String[] args) {
     init();
-    Application application = new Application();
+    application = new Application();
 
-    GridLayout layout = new GridLayout(2, true);
-    shell.setLayout(layout);
+    GridLayout gridLayout = new GridLayout(2, true);
 
-    initButtons(application);
+    shell.setLayout(gridLayout);
+    initButtons();
+    initText();
 
     render();
 
     dispose();
   }
 
-  private static void initButtons(Application application) {
-    initDirectoryButton(application);
+  private static void initButtons() {
+    initFilesButton();
+    initDirectoryButton();
   }
 
-  private static void initDirectoryButton(Application application) {
+  private static void initFilesButton() {
     Button selectFiles = new Button(shell, SWT.PUSH);
     selectFiles.setText("File(s)");
-    selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true, 1, 1));
     selectFiles.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        application.openFileDialogForDirectory(shell);
-      }
-    });
-    shell.setDefaultButton(selectFiles);
-
-    Button selectDirectory = new Button(shell, SWT.PUSH);
-    selectDirectory.setText("Directory");
-    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    selectDirectory.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        application.openFileDialogForDirectory(shell);
+        application.openFileDialogForFiles();
       }
     });
     shell.setDefaultButton(selectFiles);
   }
 
+  private static void initDirectoryButton() {
+    Button selectDirectory = new Button(shell, SWT.PUSH);
+    selectDirectory.setText("Directory");
+    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true, 1, 1));
+    selectDirectory.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        application.openFileDialogForFiles();
+      }
+    });
+  }
+
+  private static void initText() {
+    text = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+    text.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
+    text.setForeground(display.getSystemColor(SWT.COLOR_WHITE));
+    GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    gridData.horizontalSpan = 2;
+    text.setLayoutData(gridData);
+  }
+
   private static void render() {
-    shell.pack();
     shell.open();
   }
 
@@ -75,8 +94,9 @@ public class Application {
     display.dispose();
   }
 
-  private void openFileDialogForDirectory(Shell shell) {
-    FileDialog dialog = new FileDialog(shell, SWT.SAVE);
+  private void openFileDialogForFiles() {
+    FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+    dialog.setText("Open");
     String[] filterNames = new String[] {"Subtitle Files", "All Files (*)"};
     String[] filterExtensions = new String[] {"*.srt;*.sub", "*"};
     String filterPath = "/";
@@ -89,7 +109,31 @@ public class Application {
     dialog.setFilterNames(filterNames);
     dialog.setFilterExtensions(filterExtensions);
     dialog.setFilterPath(filterPath);
-    dialog.setFileName("myfile");
-    System.out.println("Save to: " + dialog.open());
+    String pathname = dialog.open();
+    String fileContent = readFile(pathname);
+    text.setText(fileContent);
+  }
+
+  private String readFile(String pathname) {
+    StringBuilder contents = new StringBuilder();
+
+    File file = null;
+    try {
+      file = new File(pathname);
+
+      try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+          line = line.trim();
+
+          if (!line.isEmpty() && !Character.isDigit(line.charAt(0))) {
+            contents.append(line + "\n");
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return contents.toString();
   }
 }
