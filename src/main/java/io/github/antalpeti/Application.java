@@ -55,7 +55,7 @@ public class Application {
   private static void initFilesButton() {
     Button selectFiles = new Button(shell, SWT.PUSH);
     selectFiles.setText("File(s)");
-    selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true, 1, 1));
+    selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     selectFiles.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -68,7 +68,7 @@ public class Application {
   private static void initDirectoryButton() {
     Button selectDirectory = new Button(shell, SWT.PUSH);
     selectDirectory.setText("Directory");
-    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, true, 1, 1));
+    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     selectDirectory.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -148,6 +148,7 @@ public class Application {
         String line;
         TreeMap<String, Integer> wordFrequency = new TreeMap<>();
 
+        int processedWordNumber = 0;
         while ((line = br.readLine()) != null) {
           line = line.trim();
 
@@ -156,11 +157,11 @@ public class Application {
 
           if (!emptyLine && !srtTime) {
             line = line.toLowerCase();
-            line = removeBoldItalicTags(line);
+            line = removeBoldItalicFontTags(line);
 
             String[] words = line.split("\\s");
             for (String word : words) {
-              word = removeBoldItalicTags(word);
+              word = removeBoldItalicFontTags(word);
 
               while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
                 word = word.substring(1);
@@ -173,6 +174,7 @@ public class Application {
               if (occurence == null) {
                 occurence = new Integer(0);
               }
+              ++processedWordNumber;
               wordFrequency.put(word, ++occurence);
             }
           }
@@ -185,7 +187,10 @@ public class Application {
           Integer value = entry.getValue();
           contents.append(key + " " + value + "\n");
         }
-        status.setText("Found individual words: " + individualWordNumber);
+        StringBuilder statusText = new StringBuilder();
+        statusText.append("Found individual words: " + individualWordNumber);
+        statusText.append("\nProcessed words: " + processedWordNumber);
+        status.setText(statusText.toString());
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -193,7 +198,7 @@ public class Application {
     return contents.toString();
   }
 
-  private String removeBoldItalicTags(String text) {
+  private String removeBoldItalicFontTags(String text) {
     while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text) || hasFontColorOpenTag(text)
         || hasFontCloseTag(text)) {
       text = hasBoldItalicOpenTag(text) ? removeBoldItalicOpenTag(text) : text;
