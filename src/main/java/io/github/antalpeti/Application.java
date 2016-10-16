@@ -28,7 +28,8 @@ public class Application {
   private static Display display;
   private static Shell shell;
   private static Application application;
-  private static Text text;
+  private static Text console;
+  private static Text status;
 
   public static void main(String[] args) {
     init();
@@ -38,7 +39,8 @@ public class Application {
 
     shell.setLayout(gridLayout);
     initButtons();
-    initText();
+    initConsole();
+    initStatus();
 
     render();
 
@@ -75,13 +77,23 @@ public class Application {
     });
   }
 
-  private static void initText() {
-    text = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-    text.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
-    text.setForeground(display.getSystemColor(SWT.COLOR_WHITE));
+  private static void initConsole() {
+    console = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+    console.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
+    console.setForeground(display.getSystemColor(SWT.COLOR_WHITE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     gridData.horizontalSpan = 2;
-    text.setLayoutData(gridData);
+    console.setLayoutData(gridData);
+  }
+
+  private static void initStatus() {
+    status = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+    status.setBackground(display.getSystemColor(SWT.COLOR_GRAY));
+    status.setForeground(display.getSystemColor(SWT.COLOR_BLUE));
+    GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    gridData.horizontalSpan = 2;
+    status.setLayoutData(gridData);
+
   }
 
   private static void render() {
@@ -118,7 +130,7 @@ public class Application {
     dialog.setFilterPath(filterPath);
     String pathname = dialog.open();
     String fileContent = readFile(pathname);
-    text.setText(fileContent);
+    console.setText(fileContent);
   }
 
   private String readFile(String pathname) {
@@ -166,12 +178,14 @@ public class Application {
           }
         }
 
-        int wordNumber = 0;
+        int individualWordNumber = 0;
         for (Map.Entry<String, Integer> entry : entriesSortedByValues(wordFrequency)) {
+          ++individualWordNumber;
           String key = entry.getKey();
           Integer value = entry.getValue();
-          contents.append(++wordNumber + " " + key + "   " + value + "\n");
+          contents.append(key + " " + value + "\n");
         }
+        status.setText("Found individual words: " + individualWordNumber);
       }
     } catch (Exception e) {
       e.printStackTrace();
