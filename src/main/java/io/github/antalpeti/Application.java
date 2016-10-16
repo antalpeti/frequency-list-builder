@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import io.github.antalpeti.constant.DirectionOrder;
-import io.github.antalpeti.constant.TextConstant;
+import io.github.antalpeti.util.TagRemover;
 import io.github.antalpeti.util.Util;
 
 public class Application {
@@ -158,11 +158,11 @@ public class Application {
 
           if (!emptyLine && !srtTime) {
             line = line.toLowerCase();
-            line = removeBoldItalicFontTags(line);
+            line = TagRemover.getInstance().removeBoldItalicFontTags(line);
 
             String[] words = line.split("\\s");
             for (String word : words) {
-              word = removeBoldItalicFontTags(word);
+              word = TagRemover.getInstance().removeBoldItalicFontTags(word);
 
               while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
                 word = word.substring(1);
@@ -187,15 +187,7 @@ public class Application {
           }
         }
 
-        int individualWordNumber = 0;;
-        SortedSet<Entry<String, Integer>> entriesSortedByValues =
-            Util.getInstance().entriesSortedByValues(wordFrequency, DirectionOrder.DESCENDING);
-        for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
-          ++individualWordNumber;
-          String key = entry.getKey();
-          Integer value = entry.getValue();
-          contents.append(key + " " + value + "\n");
-        }
+        int individualWordNumber = sortMap(contents, wordFrequency);
         StringBuilder statusText = new StringBuilder();
         statusText.append("Found individual words: " + individualWordNumber);
         statusText.append("\nProcessed words: " + processedWordNumber);
@@ -207,46 +199,24 @@ public class Application {
     return contents.toString();
   }
 
-  private String removeBoldItalicFontTags(String text) {
-    while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text) || hasFontColorOpenTag(text)
-        || hasFontCloseTag(text)) {
-      text = hasBoldItalicOpenTag(text) ? removeBoldItalicOpenTag(text) : text;
-      text = hasBoldItalicCloseTag(text) ? removeBoldItalicCloseTag(text) : text;
-      text = hasFontColorOpenTag(text) ? removeFontColorOpenTag(text) : text;
-      text = hasFontCloseTag(text) ? removeFontCloseTag(text) : text;
+  /**
+   * Sort a map and write its content into the input paramter.
+   * 
+   * @param contents the sorted content
+   * @param wordFrequency the map
+   * @return the number of the individual words
+   */
+  private int sortMap(StringBuilder contents, TreeMap<String, Integer> wordFrequency) {
+    int individualWordNumber = 0;;
+    SortedSet<Entry<String, Integer>> entriesSortedByValues =
+        Util.getInstance().entriesSortedByValues(wordFrequency, DirectionOrder.DESCENDING);
+    for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
+      ++individualWordNumber;
+      String key = entry.getKey();
+      Integer value = entry.getValue();
+      contents.append(key + " " + value + "\n");
     }
-    return text;
+    return individualWordNumber;
   }
 
-  private boolean hasBoldItalicOpenTag(String text) {
-    return text.length() > 3 && text.matches(".*(<i>|<b>)+.*");
-  }
-
-  private String removeBoldItalicOpenTag(String text) {
-    return text.replaceAll("(<i>|<b>)", TextConstant.EMPTY_STRING);
-  }
-
-  private boolean hasBoldItalicCloseTag(String text) {
-    return text.length() > 3 && text.matches(".*(<\\/i>|<\\/b>)+.*");
-  }
-
-  private String removeBoldItalicCloseTag(String text) {
-    return text.replaceAll("(<\\/i>|<\\/b>)", TextConstant.EMPTY_STRING);
-  }
-
-  private boolean hasFontColorOpenTag(String text) {
-    return text.length() > 9 && text.matches(".*(<font color=.{9}>)+.*");
-  }
-
-  private String removeFontColorOpenTag(String text) {
-    return text.replaceAll("(<font color=.{9}>)", TextConstant.EMPTY_STRING);
-  }
-
-  private boolean hasFontCloseTag(String text) {
-    return text.length() > 3 && text.matches(".*(<\\/font>)+.*");
-  }
-
-  private String removeFontCloseTag(String text) {
-    return text.replaceAll("(<\\/font>)", TextConstant.EMPTY_STRING);
-  }
 }
