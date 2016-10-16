@@ -180,9 +180,12 @@ public class Application {
   }
 
   private String removeBoldItalicTags(String text) {
-    while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text)) {
+    while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text) || hasFontColorOpenTag(text)
+        || hasFontCloseTag(text)) {
       text = hasBoldItalicOpenTag(text) ? removeBoldItalicOpenTag(text) : text;
       text = hasBoldItalicCloseTag(text) ? removeBoldItalicCloseTag(text) : text;
+      text = hasFontColorOpenTag(text) ? removeFontColorOpenTag(text) : text;
+      text = hasFontCloseTag(text) ? removeFontCloseTag(text) : text;
     }
     return text;
   }
@@ -201,6 +204,22 @@ public class Application {
 
   private String removeBoldItalicCloseTag(String text) {
     return text.replaceAll("(<\\/i>|<\\/b>)", TextConstant.EMPTY_STRING);
+  }
+
+  private boolean hasFontColorOpenTag(String text) {
+    return text.length() > 9 && text.matches(".*(<font color=.{9}>)+.*");
+  }
+
+  private String removeFontColorOpenTag(String text) {
+    return text.replaceAll("(<font color=.{9}>)", TextConstant.EMPTY_STRING);
+  }
+
+  private boolean hasFontCloseTag(String text) {
+    return text.length() > 3 && text.matches(".*(<\\/font>)+.*");
+  }
+
+  private String removeFontCloseTag(String text) {
+    return text.replaceAll("(<\\/font>)", TextConstant.EMPTY_STRING);
   }
 
   <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
