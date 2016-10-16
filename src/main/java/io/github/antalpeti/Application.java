@@ -4,11 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,7 +20,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import io.github.antalpeti.constant.DirectionOrder;
 import io.github.antalpeti.constant.TextConstant;
+import io.github.antalpeti.util.Util;
 
 public class Application {
 
@@ -186,8 +187,10 @@ public class Application {
           }
         }
 
-        int individualWordNumber = 0;
-        for (Map.Entry<String, Integer> entry : entriesSortedByValues(wordFrequency)) {
+        int individualWordNumber = 0;;
+        SortedSet<Entry<String, Integer>> entriesSortedByValues =
+            Util.getInstance().entriesSortedByValues(wordFrequency, DirectionOrder.DESCENDING);
+        for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
           ++individualWordNumber;
           String key = entry.getKey();
           Integer value = entry.getValue();
@@ -245,17 +248,5 @@ public class Application {
 
   private String removeFontCloseTag(String text) {
     return text.replaceAll("(<\\/font>)", TextConstant.EMPTY_STRING);
-  }
-
-  <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
-    SortedSet<Map.Entry<K, V>> sortedEntries = new TreeSet<Map.Entry<K, V>>(new Comparator<Map.Entry<K, V>>() {
-      @Override
-      public int compare(Map.Entry<K, V> entry1, Map.Entry<K, V> entry2) {
-        int result = entry1.getValue().compareTo(entry2.getValue());
-        return result != 0 ? -result : 1;
-      }
-    });
-    sortedEntries.addAll(map.entrySet());
-    return sortedEntries;
   }
 }
