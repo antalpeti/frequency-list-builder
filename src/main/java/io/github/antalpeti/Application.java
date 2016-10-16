@@ -123,6 +123,10 @@ public class Application {
     StringBuilder contents = new StringBuilder();
 
     File file = null;
+    if (pathname == null) {
+      return "No file selected.";
+    }
+
     try {
       file = new File(pathname);
 
@@ -137,12 +141,13 @@ public class Application {
           boolean srtTime = line.matches("[\\d:,\\s->]*");
 
           if (!emptyLine && !srtTime) {
-            line = removeItalicBoldTags(line);
+            line = line.toLowerCase();
+            line = removeBoldItalicTags(line);
 
             String[] words = line.split("\\s");
             for (String word : words) {
-              word = word.toLowerCase();
-              word = removeItalicBoldTags(word);
+              word = removeBoldItalicTags(word);
+
               while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
                 word = word.substring(1);
               }
@@ -172,14 +177,28 @@ public class Application {
     return contents.toString();
   }
 
-  private String removeItalicBoldTags(String line) {
-    while (line.length() > 3 && line.matches("^(<i>|<b>)+.*")) {
-      line = line.substring(3);
+  private String removeBoldItalicTags(String text) {
+    while (hasBoldItalicTagFront(text) || hasBoldItalicTagBack(text)) {
+      text = hasBoldItalicTagFront(text) ? removeBoldItalicTagFront(text) : text;
+      text = hasBoldItalicTagBack(text) ? removeBoldItalicTagBack(text) : text;
     }
-    while (line.length() > 3 && line.matches(".*(<\\/i>|<\\/b>)+$")) {
-      line = line.substring(0, line.length() - 3);
-    }
-    return line;
+    return text;
+  }
+
+  private boolean hasBoldItalicTagFront(String text) {
+    return text.length() > 3 && text.matches("^(<i>|<b>)+.*");
+  }
+
+  private String removeBoldItalicTagFront(String text) {
+    return text.substring(3);
+  }
+
+  private boolean hasBoldItalicTagBack(String text) {
+    return text.length() > 3 && text.matches(".*(<\\/i>|<\\/b>)+$");
+  }
+
+  private String removeBoldItalicTagBack(String text) {
+    return text.substring(0, text.length() - 4);
   }
 
   <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
