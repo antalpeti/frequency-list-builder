@@ -137,9 +137,12 @@ public class Application {
           boolean srtTime = line.matches("[\\d:,\\s->]*");
 
           if (!emptyLine && !srtTime) {
+            line = removeItalicBoldTags(line);
+
             String[] words = line.split("\\s");
             for (String word : words) {
               word = word.toLowerCase();
+              word = removeItalicBoldTags(word);
               while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
                 word = word.substring(1);
               }
@@ -167,6 +170,16 @@ public class Application {
       e.printStackTrace();
     }
     return contents.toString();
+  }
+
+  private String removeItalicBoldTags(String line) {
+    while (line.length() > 3 && line.matches("^(<i>|<b>)+.*")) {
+      line = line.substring(3);
+    }
+    while (line.length() > 3 && line.matches(".*(<\\/i>|<\\/b>)+$")) {
+      line = line.substring(0, line.length() - 3);
+    }
+    return line;
   }
 
   <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
