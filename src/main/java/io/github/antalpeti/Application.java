@@ -182,7 +182,7 @@ public class Application {
   private String removeBoldItalicTags(String text) {
     while (hasBoldItalicOpenTag(text) || hasBoldItalicCloseTag(text)) {
       text = hasBoldItalicOpenTag(text) ? removeBoldItalicOpenTag(text) : text;
-      text = hasBoldItalicCloseTag(text) ? removeBoldItalicBoldTag(text) : text;
+      text = hasBoldItalicCloseTag(text) ? removeBoldItalicCloseTag(text) : text;
     }
     return text;
   }
@@ -199,7 +199,7 @@ public class Application {
     return text.length() > 3 && text.matches(".*(<\\/i>|<\\/b>)+.*");
   }
 
-  private String removeBoldItalicBoldTag(String text) {
+  private String removeBoldItalicCloseTag(String text) {
     return text.replaceAll("(<\\/i>|<\\/b>)", TextConstant.EMPTY_STRING);
   }
 
