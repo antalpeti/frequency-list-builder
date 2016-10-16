@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
-import java.util.TreeMap;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -116,8 +115,8 @@ public class Application {
   }
 
   private void openFileDialogForFiles() {
-    FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-    dialog.setText("Open");
+    FileDialog fileDialog = new FileDialog(shell, SWT.OPEN | SWT.MULTI);
+    fileDialog.setText("Open");
     String[] filterNames = new String[] {"Subtitle Files", "All Files (*)"};
     String[] filterExtensions = new String[] {"*.srt", "*"};
     String filterPath = "/";
@@ -127,31 +126,42 @@ public class Application {
       filterExtensions = new String[] {"*.srt", "*.*"};
       filterPath = "c:\\";
     }
-    dialog.setFilterNames(filterNames);
-    dialog.setFilterExtensions(filterExtensions);
-    dialog.setFilterPath(filterPath);
-    String pathname = dialog.open();
-    String fileContent = readFile(pathname);
-    console.setText(fileContent);
+    fileDialog.setFilterNames(filterNames);
+    fileDialog.setFilterExtensions(filterExtensions);
+    fileDialog.setFilterPath(filterPath);
+    fileDialog.open();
+    String directoryPath = fileDialog.getFilterPath();
+    String[] fileNames = fileDialog.getFileNames();
+
+    WordData wordData = new WordData();
+    wordData = readFiles(directoryPath, fileNames, wordData);
+
+    console.setText(wordData.getContents().toString());
+    status.setText(wordData.getStatusText());
   }
 
-  private String readFile(String pathname) {
-    StringBuilder contents = new StringBuilder();
-
-    File file = null;
-    if (pathname == null) {
-      return "No file selected.";
+  private WordData readFiles(String directoryPath, String[] fileNames, WordData wordData) {
+    String separator = File.separator;
+    if (fileNames.length == 0) {
+      wordData.getContents().append("No file selected!");
     }
+    for (String filename : fileNames) {
+      String pathname = directoryPath + separator + filename;
+      readFile(pathname, wordData);
+    }
+    sortMap(wordData);
+    return wordData;
+  }
 
+
+  private void readFile(String pathname, WordData wordData) {
+    File file = null;
     try {
       file = new File(pathname);
 
-
       try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"))) {
         String line;
-        TreeMap<String, Integer> wordFrequency = new TreeMap<>();
 
-        int processedWordNumber = 0;
         TagRemover tagRemover = TagRemover.getInstance();
         CharacterRemover characterRemover = CharacterRemover.getInstance();
 
@@ -171,53 +181,37 @@ public class Application {
 
               word = characterRemover.removeFrontAndBackSpecialCharacters(word);
 
-              if (word.length() > 0 && word.matches("-+")) {
-                word = word.replaceAll("-", "");
-              }
+              word = characterRemover.removeOnlyHypenCharacter(word);
 
               if (word.isEmpty()) {
                 continue;
               }
-              Integer occurence = wordFrequency.get(word);
+              Integer occurence = wordData.getWordFrequency().get(word);
               if (occurence == null) {
                 occurence = new Integer(0);
               }
-              ++processedWordNumber;
-              wordFrequency.put(word, ++occurence);
+              wordData.setProcessedWordNumber(wordData.getProcessedWordNumber() + 1);
+              wordData.getWordFrequency().put(word, ++occurence);
             }
           }
         }
-
-        int individualWordNumber = sortMap(contents, wordFrequency);
-        StringBuilder statusText = new StringBuilder();
-        statusText.append("Found individual words: " + individualWordNumber);
-        statusText.append("\nProcessed words: " + processedWordNumber);
-        status.setText(statusText.toString());
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
-    return contents.toString();
   }
 
-  /**
-   * Sort a map and write its content into the input paramter.
-   * 
-   * @param contents the sorted content
-   * @param wordFrequency the map
-   * @return the number of the individual words
-   */
-  private int sortMap(StringBuilder contents, TreeMap<String, Integer> wordFrequency) {
+  private void sortMap(WordData wordData) {
     int individualWordNumber = 0;;
     SortedSet<Entry<String, Integer>> entriesSortedByValues =
-        Util.getInstance().entriesSortedByValues(wordFrequency, DirectionOrder.DESCENDING);
+        Util.getInstance().entriesSortedByValues(wordData.getWordFrequency(), DirectionOrder.DESCENDING);
     for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
       ++individualWordNumber;
       String key = entry.getKey();
       Integer value = entry.getValue();
-      contents.append(key + " " + value + "\n");
+      wordData.getContents().append(key + " " + value + "\n");
     }
-    return individualWordNumber;
+    wordData.setIndividualWordNumber(individualWordNumber);
   }
 
 }

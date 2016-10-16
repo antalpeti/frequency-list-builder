@@ -32,4 +32,11 @@ public class CharacterRemover {
     }
     return word;
   }
+
+  public String removeOnlyHypenCharacter(String word) {
+    if (word.length() > 0 && word.matches("-+")) {
+      word = word.replaceAll("-", "");
+    }
+    return word;
+  }
 }
