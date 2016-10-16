@@ -169,7 +169,13 @@ public class Application {
               while (word.length() > 0 && word.matches(".*[\"\\)\\]\\}\\.,\\?!:$]+$")) {
                 word = word.substring(0, word.length() - 1);
               }
+              if (word.length() > 0 && word.matches("-+")) {
+                word = word.replaceAll("-", "");
+              }
 
+              if (word.isEmpty()) {
+                continue;
+              }
               Integer occurence = wordFrequency.get(word);
               if (occurence == null) {
                 occurence = new Integer(0);
