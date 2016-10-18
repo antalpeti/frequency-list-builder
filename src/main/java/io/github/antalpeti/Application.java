@@ -33,7 +33,7 @@ public class Application {
   private static Shell shell;
   private static Application application;
   private static Text console;
-  private static Text status;
+  private static Text log;
 
   public static void main(String[] args) {
     application = new Application();
@@ -44,7 +44,7 @@ public class Application {
     shell.setLayout(gridLayout);
     application.initButtons();
     application.initConsole();
-    application.initStatus();
+    application.initLog();
 
     application.render();
 
@@ -58,23 +58,23 @@ public class Application {
   }
 
   private void initFilesButton() {
-    Button selectFiles = new Button(shell, SWT.PUSH);
-    selectFiles.setText("File(s)");
-    selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    selectFiles.addSelectionListener(new SelectionAdapter() {
+    Button files = new Button(shell, SWT.PUSH);
+    files.setText("File(s)");
+    files.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    files.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         application.openFileDialogForFiles();
       }
     });
-    shell.setDefaultButton(selectFiles);
+    shell.setDefaultButton(files);
   }
 
   private void initDirectoryButton() {
-    Button selectDirectory = new Button(shell, SWT.PUSH);
-    selectDirectory.setText("Directory");
-    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    selectDirectory.addSelectionListener(new SelectionAdapter() {
+    Button directory = new Button(shell, SWT.PUSH);
+    directory.setText("Directory");
+    directory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    directory.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         application.openFileDialogForFiles();
@@ -83,11 +83,11 @@ public class Application {
   }
 
   private void initExportButton() {
-    Button selectDirectory = new Button(shell, SWT.PUSH);
-    selectDirectory.setText("Export");
-    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    selectDirectory.setEnabled(exportEnabled);
-    selectDirectory.addSelectionListener(new SelectionAdapter() {
+    export = new Button(shell, SWT.PUSH);
+    export.setText("Export");
+    export.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    export.setEnabled(false);
+    export.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         application.openFileDialogForExport();
@@ -104,13 +104,13 @@ public class Application {
     console.setLayoutData(gridData);
   }
 
-  private void initStatus() {
-    status = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-    status.setBackground(display.getSystemColor(SWT.COLOR_GRAY));
-    status.setForeground(display.getSystemColor(SWT.COLOR_BLUE));
+  private void initLog() {
+    log = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+    log.setBackground(display.getSystemColor(SWT.COLOR_GRAY));
+    log.setForeground(display.getSystemColor(SWT.COLOR_BLUE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     gridData.horizontalSpan = 3;
-    status.setLayoutData(gridData);
+    log.setLayoutData(gridData);
   }
 
   private void render() {
@@ -152,20 +152,24 @@ public class Application {
     WordData wordData = new WordData();
     wordData = readFiles(directoryPath, fileNames, wordData);
 
-    console.setText(wordData.getContents().toString());
-    status.setText(wordData.getStatusText());
+    if (wordData.getContents().toString().isEmpty()) {
+      log.setText(log.getText() + "\n" + "No selection or empty file.");
+    } else {
+      console.setText(wordData.getContents().toString());
+      log.setText(log.getText() + "\n" + wordData.getStatusText());
+    }
   }
 
   private WordData readFiles(String directoryPath, String[] fileNames, WordData wordData) {
     String separator = File.separator;
-    if (fileNames.length == 0) {
-      wordData.getContents().append("No file selected!");
+    if (fileNames.length != 0) {
+
+      for (String filename : fileNames) {
+        String pathname = directoryPath + separator + filename;
+        readFile(pathname, wordData);
+      }
+      sortMap(wordData);
     }
-    for (String filename : fileNames) {
-      String pathname = directoryPath + separator + filename;
-      readFile(pathname, wordData);
-    }
-    sortMap(wordData);
     return wordData;
   }
 
@@ -227,11 +231,11 @@ public class Application {
       Integer value = entry.getValue();
       wordData.getContents().append(key + " " + value + "\n");
     }
-    exportEnabled = entriesSortedByValues.size() > 0;
+    export.setEnabled(entriesSortedByValues.size() > 0);
     wordData.setIndividualWordNumber(individualWordNumber);
   }
 
-  boolean exportEnabled = false;
+  private Button export;
 
   private void openFileDialogForExport() {
     FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
@@ -251,10 +255,20 @@ public class Application {
     fileDialog.setFileName("myfile");
     String fileName = fileDialog.open();
 
+    if (fileName == null) {
+      return;
+    }
     PrintWriter writer;
     try {
       writer = new PrintWriter(fileName, "UTF-8");
+      String content = console.getText();
+      String[] lines = content.split("\\n");
+      for (String line : lines) {
+        line = line.replaceAll("\\s", ",");
+        writer.println(line);
+      }
       writer.close();
+      log.setText(log.getText() + "\n" + "Export to " + fileName + ".");
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
