@@ -3,7 +3,10 @@ package io.github.antalpeti;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
@@ -33,27 +36,28 @@ public class Application {
   private static Text status;
 
   public static void main(String[] args) {
-    init();
     application = new Application();
+    application.init();
 
-    GridLayout gridLayout = new GridLayout(2, true);
+    GridLayout gridLayout = new GridLayout(3, true);
 
     shell.setLayout(gridLayout);
-    initButtons();
-    initConsole();
-    initStatus();
+    application.initButtons();
+    application.initConsole();
+    application.initStatus();
 
-    render();
+    application.render();
 
-    dispose();
+    application.dispose();
   }
 
-  private static void initButtons() {
+  private void initButtons() {
     initFilesButton();
     initDirectoryButton();
+    initExportButton();
   }
 
-  private static void initFilesButton() {
+  private void initFilesButton() {
     Button selectFiles = new Button(shell, SWT.PUSH);
     selectFiles.setText("File(s)");
     selectFiles.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -66,7 +70,7 @@ public class Application {
     shell.setDefaultButton(selectFiles);
   }
 
-  private static void initDirectoryButton() {
+  private void initDirectoryButton() {
     Button selectDirectory = new Button(shell, SWT.PUSH);
     selectDirectory.setText("Directory");
     selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -78,35 +82,47 @@ public class Application {
     });
   }
 
-  private static void initConsole() {
+  private void initExportButton() {
+    Button selectDirectory = new Button(shell, SWT.PUSH);
+    selectDirectory.setText("Export");
+    selectDirectory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    selectDirectory.setEnabled(exportEnabled);
+    selectDirectory.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        application.openFileDialogForExport();
+      }
+    });
+  }
+
+  private void initConsole() {
     console = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     console.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
     console.setForeground(display.getSystemColor(SWT.COLOR_WHITE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    gridData.horizontalSpan = 2;
+    gridData.horizontalSpan = 3;
     console.setLayoutData(gridData);
   }
 
-  private static void initStatus() {
+  private void initStatus() {
     status = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     status.setBackground(display.getSystemColor(SWT.COLOR_GRAY));
     status.setForeground(display.getSystemColor(SWT.COLOR_BLUE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    gridData.horizontalSpan = 2;
+    gridData.horizontalSpan = 3;
     status.setLayoutData(gridData);
-
   }
 
-  private static void render() {
+  private void render() {
     shell.open();
   }
 
-  private static void init() {
+  private void init() {
     display = new Display();
     shell = new Shell(display);
   }
 
-  private static void dispose() {
+  private void dispose() {
     while (!shell.isDisposed()) {
       if (!display.readAndDispatch())
         display.sleep();
@@ -211,7 +227,40 @@ public class Application {
       Integer value = entry.getValue();
       wordData.getContents().append(key + " " + value + "\n");
     }
+    exportEnabled = entriesSortedByValues.size() > 0;
     wordData.setIndividualWordNumber(individualWordNumber);
   }
+
+  boolean exportEnabled = false;
+
+  private void openFileDialogForExport() {
+    FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
+    fileDialog.setText("Save");
+    String[] filterNames = new String[] {"Comma Separated Values"};
+    String[] filterExtensions = new String[] {"*.csv"};
+    String filterPath = "/";
+    String platform = SWT.getPlatform();
+    if (platform.equals("win32")) {
+      filterNames = new String[] {"Comma Separated Values"};
+      filterExtensions = new String[] {"*.csv"};
+      filterPath = "c:\\";
+    }
+    fileDialog.setFilterNames(filterNames);
+    fileDialog.setFilterExtensions(filterExtensions);
+    fileDialog.setFilterPath(filterPath);
+    fileDialog.setFileName("myfile");
+    String fileName = fileDialog.open();
+
+    PrintWriter writer;
+    try {
+      writer = new PrintWriter(fileName, "UTF-8");
+      writer.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+  }
+
 
 }
