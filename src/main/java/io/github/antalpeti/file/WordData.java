@@ -19,11 +19,14 @@ public class WordData {
    * 
    * @return
    */
-  public String getLogText() {
-    StringBuilder statusText = new StringBuilder();
-    statusText.append("Found individual words: " + individualWordNumber);
-    statusText.append("\nProcessed words: " + processedWordNumber);
-    return statusText.toString();
+  public String getAfterProcessMessage() {
+    StringBuilder message = new StringBuilder();
+    message.append("Found individual words: ");
+    message.append("individualWordNumber");
+    message.append("\n");
+    message.append("Processed words: ");
+    message.append("processedWordNumber");
+    return message.toString();
   }
 
   public int getProcessedWordNumber() {

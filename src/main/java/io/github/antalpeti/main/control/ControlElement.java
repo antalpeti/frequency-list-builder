@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -50,7 +51,7 @@ public class ControlElement {
     files.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        openFileDialogForFiles();
+        openFileDialog();
       }
     });
     setFontSize(files, 20);
@@ -63,9 +64,9 @@ public class ControlElement {
     control.setFont(new Font(control.getDisplay(), fontData[0]));
   }
 
-  private void openFileDialogForFiles() {
+  private void openFileDialog() {
     FileDialog fileDialog = new FileDialog(shell, SWT.OPEN | SWT.MULTI);
-    fileDialog.setText("Open");
+    fileDialog.setText("Select File(s)");
     String[] filterNames = new String[] {"Subtitle Files", "All Files (*)"};
     String[] filterExtensions = new String[] {"*.srt", "*"};
     String filterPath = "/";
@@ -87,10 +88,10 @@ public class ControlElement {
     export.setEnabled(wordData.getWordFrequency().size() > 0);
 
     if (wordData.getContents().toString().isEmpty()) {
-      log.setText(log.getText() + "\n" + "No selection or empty file.");
+      addLogMessage("No selected file(s) or empty file(s).");
     } else {
       console.setText(wordData.getContents().toString());
-      log.setText(log.getText() + "\n" + wordData.getLogText());
+      addLogMessage(wordData.getAfterProcessMessage());
     }
   }
 
@@ -101,10 +102,36 @@ public class ControlElement {
     directory.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        openFileDialogForFiles();
+        openDirectoryDialog();
       }
     });
     setFontSize(directory, 20);
+  }
+
+  private void openDirectoryDialog() {
+    DirectoryDialog directoryDialog = new DirectoryDialog(shell, SWT.OPEN | SWT.MULTI);
+    directoryDialog.setText("Select Directory");
+    String filterPath = "/";
+    String platform = SWT.getPlatform();
+    if (platform.equals("win32")) {
+      filterPath = "c:\\";
+    }
+    directoryDialog.setFilterPath(filterPath);
+    String directoryPath = directoryDialog.open();
+    if (directoryPath == null) {
+      addLogMessage("No selected directory.");
+    } else {
+      addLogMessage(directoryPath);
+    }
+  }
+
+  private void addLogMessage(String message) {
+    if (!log.getText().isEmpty()) {
+      log.append("\n");
+    }
+    if (message != null && !message.isEmpty()) {
+      log.append(message);
+    }
   }
 
   private void openFileDialogForExport() {
@@ -138,7 +165,7 @@ public class ControlElement {
         writer.println(line);
       }
       writer.close();
-      log.setText(log.getText() + "\n" + "Export to " + fileName + ".");
+      addLogMessage("Export to " + fileName + ".");
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
