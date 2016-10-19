@@ -7,9 +7,12 @@ import java.io.UnsupportedEncodingException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -58,7 +61,14 @@ public class Application {
         application.openFileDialogForFiles();
       }
     });
+    setFontSize(files, 20);
     shell.setDefaultButton(files);
+  }
+
+  private void setFontSize(Control files, int size) {
+    FontData[] fontData = files.getFont().getFontData();
+    fontData[0].setHeight(size);
+    files.setFont(new Font(display, fontData[0]));
   }
 
   private void initDirectoryButton() {
@@ -71,6 +81,7 @@ public class Application {
         application.openFileDialogForFiles();
       }
     });
+    setFontSize(directory, 20);
   }
 
   private void initExportButton() {
@@ -84,6 +95,7 @@ public class Application {
         application.openFileDialogForExport();
       }
     });
+    setFontSize(export, 20);
   }
 
   private void initConsole() {
@@ -93,6 +105,7 @@ public class Application {
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     gridData.horizontalSpan = 3;
     console.setLayoutData(gridData);
+    setFontSize(console, 20);
   }
 
   private void initLog() {
@@ -102,6 +115,7 @@ public class Application {
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     gridData.horizontalSpan = 3;
     log.setLayoutData(gridData);
+    setFontSize(log, 20);
   }
 
   private void render() {

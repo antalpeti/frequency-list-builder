@@ -38,7 +38,7 @@ public class FileHandler {
         String pathname = directoryPath + separator + filename;
         collectFileIndividualWords(pathname, wordData);
       }
-      Util.getInstance().sortWords(wordData, DirectionOrder.ASCENDING);
+      Util.getInstance().sortWords(wordData, DirectionOrder.DESCENDING);
     }
     return wordData;
   }
