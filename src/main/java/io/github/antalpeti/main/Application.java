@@ -141,7 +141,7 @@ public class Application {
     String[] fileNames = fileDialog.getFileNames();
 
     WordData wordData = new WordData();
-    wordData = FileHandler.getInstance().readFiles(directoryPath, fileNames, wordData);
+    wordData = FileHandler.getInstance().processFiles(directoryPath, fileNames, wordData);
     export.setEnabled(wordData.getWordFrequency().size() > 0);
 
     if (wordData.getContents().toString().isEmpty()) {

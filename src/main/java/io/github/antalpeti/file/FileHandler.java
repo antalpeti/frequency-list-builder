@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import io.github.antalpeti.constant.DirectionOrder;
 import io.github.antalpeti.util.CharacterRemover;
 import io.github.antalpeti.util.TagRemover;
 import io.github.antalpeti.util.Util;
@@ -24,20 +25,20 @@ public class FileHandler {
   /**
    * Process files contents.
    * 
-   * @param directoryPath
-   * @param fileNames
-   * @param wordData
-   * @return return unsorted
+   * @param directoryPath the selected directory path
+   * @param fileNames the selected file(s)
+   * @param wordData the connected word data
+   * @return return
    */
-  public WordData readFiles(String directoryPath, String[] fileNames, WordData wordData) {
+  public WordData processFiles(String directoryPath, String[] fileNames, WordData wordData) {
     String separator = File.separator;
     if (fileNames.length != 0) {
 
       for (String filename : fileNames) {
         String pathname = directoryPath + separator + filename;
-        readFile(pathname, wordData);
+        collectFileIndividualWords(pathname, wordData);
       }
-      Util.getInstance().sortMap(wordData);
+      Util.getInstance().sortWords(wordData, DirectionOrder.ASCENDING);
     }
     return wordData;
   }
@@ -47,7 +48,7 @@ public class FileHandler {
    * @param pathname
    * @param wordData
    */
-  private void readFile(String pathname, WordData wordData) {
+  private void collectFileIndividualWords(String pathname, WordData wordData) {
     File file = null;
     try {
       file = new File(pathname);

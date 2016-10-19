@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import io.github.antalpeti.constant.DirectionOrder;
@@ -19,6 +20,39 @@ public class Util {
       instance = new Util();
     }
     return instance;
+  }
+
+  /**
+   * Sort the words according values descending or ascending orders.
+   * 
+   * @param wordData the input words
+   * @param directionOrder ascending or descending order
+   */
+  public void sortWords(WordData wordData, DirectionOrder directionOrder) {
+    int individualWordNumber = 0;;
+    SortedSet<Entry<String, Integer>> entriesSortedByValues =
+        sortEntriesByValues(wordData.getWordFrequency(), directionOrder);
+    for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
+      ++individualWordNumber;
+      String key = entry.getKey();
+      Integer value = entry.getValue();
+      wordData.getContents().append(key + " " + value + "\n");
+    }
+    wordData.setIndividualWordNumber(individualWordNumber);
+  }
+
+  /**
+   * Sort the map content according the values.
+   * 
+   * @param treeMap a map sorted according the keys
+   * @param directionOrder ascending or descending order
+   * @return sorted entries according the values
+   */
+  private SortedSet<Entry<String, Integer>> sortEntriesByValues(TreeMap<String, Integer> treeMap,
+      DirectionOrder directionOrder) {
+    SortedSet<Entry<String, Integer>> entriesSortedByValues =
+        Util.getInstance().entriesSortedByValues(treeMap, directionOrder);
+    return entriesSortedByValues;
   }
 
   /**
@@ -40,22 +74,5 @@ public class Util {
     });
     sortedEntries.addAll(map.entrySet());
     return sortedEntries;
-  }
-
-  /**
-   * 
-   * @param wordData
-   */
-  public void sortMap(WordData wordData) {
-    int individualWordNumber = 0;;
-    SortedSet<Entry<String, Integer>> entriesSortedByValues =
-        Util.getInstance().entriesSortedByValues(wordData.getWordFrequency(), DirectionOrder.DESCENDING);
-    for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
-      ++individualWordNumber;
-      String key = entry.getKey();
-      Integer value = entry.getValue();
-      wordData.getContents().append(key + " " + value + "\n");
-    }
-    wordData.setIndividualWordNumber(individualWordNumber);
   }
 }
