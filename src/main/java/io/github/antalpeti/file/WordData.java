@@ -1,4 +1,4 @@
-package io.github.antalpeti;
+package io.github.antalpeti.file;
 
 import java.util.TreeMap;
 
@@ -15,7 +15,11 @@ public class WordData {
     contents = new StringBuilder();
   }
 
-  public String getStatusText() {
+  /**
+   * 
+   * @return
+   */
+  public String getLogText() {
     StringBuilder statusText = new StringBuilder();
     statusText.append("Found individual words: " + individualWordNumber);
     statusText.append("\nProcessed words: " + processedWordNumber);

@@ -2,10 +2,12 @@ package io.github.antalpeti.util;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import io.github.antalpeti.constant.DirectionOrder;
+import io.github.antalpeti.file.WordData;
 
 public class Util {
   private static Util instance = null;
@@ -38,5 +40,22 @@ public class Util {
     });
     sortedEntries.addAll(map.entrySet());
     return sortedEntries;
+  }
+
+  /**
+   * 
+   * @param wordData
+   */
+  public void sortMap(WordData wordData) {
+    int individualWordNumber = 0;;
+    SortedSet<Entry<String, Integer>> entriesSortedByValues =
+        Util.getInstance().entriesSortedByValues(wordData.getWordFrequency(), DirectionOrder.DESCENDING);
+    for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
+      ++individualWordNumber;
+      String key = entry.getKey();
+      Integer value = entry.getValue();
+      wordData.getContents().append(key + " " + value + "\n");
+    }
+    wordData.setIndividualWordNumber(individualWordNumber);
   }
 }

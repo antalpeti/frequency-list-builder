@@ -1,15 +1,8 @@
-package io.github.antalpeti;
+package io.github.antalpeti.main;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.SortedSet;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -22,10 +15,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import io.github.antalpeti.constant.DirectionOrder;
-import io.github.antalpeti.util.CharacterRemover;
-import io.github.antalpeti.util.TagRemover;
-import io.github.antalpeti.util.Util;
+import io.github.antalpeti.file.FileHandler;
+import io.github.antalpeti.file.WordData;
 
 public class Application {
 
@@ -150,89 +141,15 @@ public class Application {
     String[] fileNames = fileDialog.getFileNames();
 
     WordData wordData = new WordData();
-    wordData = readFiles(directoryPath, fileNames, wordData);
+    wordData = FileHandler.getInstance().readFiles(directoryPath, fileNames, wordData);
+    export.setEnabled(wordData.getWordFrequency().size() > 0);
 
     if (wordData.getContents().toString().isEmpty()) {
       log.setText(log.getText() + "\n" + "No selection or empty file.");
     } else {
       console.setText(wordData.getContents().toString());
-      log.setText(log.getText() + "\n" + wordData.getStatusText());
+      log.setText(log.getText() + "\n" + wordData.getLogText());
     }
-  }
-
-  private WordData readFiles(String directoryPath, String[] fileNames, WordData wordData) {
-    String separator = File.separator;
-    if (fileNames.length != 0) {
-
-      for (String filename : fileNames) {
-        String pathname = directoryPath + separator + filename;
-        readFile(pathname, wordData);
-      }
-      sortMap(wordData);
-    }
-    return wordData;
-  }
-
-
-  private void readFile(String pathname, WordData wordData) {
-    File file = null;
-    try {
-      file = new File(pathname);
-
-      try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"))) {
-        String line;
-
-        TagRemover tagRemover = TagRemover.getInstance();
-        CharacterRemover characterRemover = CharacterRemover.getInstance();
-
-        while ((line = br.readLine()) != null) {
-          line = line.trim();
-
-          boolean emptyLine = line.isEmpty();
-          boolean srtTimeLine = line.matches("[\\d:,\\s->]*");
-
-          if (!emptyLine && !srtTimeLine) {
-            line = line.toLowerCase();
-            line = tagRemover.removeBoldItalicFontOpenAndCloseTags(line);
-
-            String[] words = line.split("\\s");
-            for (String word : words) {
-              word = tagRemover.removeBoldItalicFontOpenAndCloseTags(word);
-
-              word = characterRemover.removeFrontAndBackSpecialCharacters(word);
-
-              word = characterRemover.removeOnlyHypenCharacter(word);
-
-              if (word.isEmpty()) {
-                continue;
-              }
-              Integer occurence = wordData.getWordFrequency().get(word);
-              if (occurence == null) {
-                occurence = new Integer(0);
-              }
-              wordData.setProcessedWordNumber(wordData.getProcessedWordNumber() + 1);
-              wordData.getWordFrequency().put(word, ++occurence);
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void sortMap(WordData wordData) {
-    int individualWordNumber = 0;;
-    SortedSet<Entry<String, Integer>> entriesSortedByValues =
-        Util.getInstance().entriesSortedByValues(wordData.getWordFrequency(), DirectionOrder.DESCENDING);
-    for (Map.Entry<String, Integer> entry : entriesSortedByValues) {
-      ++individualWordNumber;
-      String key = entry.getKey();
-      Integer value = entry.getValue();
-      wordData.getContents().append(key + " " + value + "\n");
-    }
-    export.setEnabled(entriesSortedByValues.size() > 0);
-    wordData.setIndividualWordNumber(individualWordNumber);
   }
 
   private Button export;
@@ -275,6 +192,5 @@ public class Application {
       e.printStackTrace();
     }
   }
-
 
 }
