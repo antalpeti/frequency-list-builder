@@ -23,12 +23,12 @@ public class FileHandler {
   }
 
   /**
-   * Process files contents.
+   * Process content of files.
    * 
    * @param directoryPath the selected directory path
    * @param fileNames the selected file(s)
    * @param wordData the connected word data
-   * @return return
+   * @return return the processed content
    */
   public WordData processFiles(String directoryPath, String[] fileNames, WordData wordData) {
     String separator = File.separator;
