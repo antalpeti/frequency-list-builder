@@ -39,4 +39,11 @@ public class CharacterRemover {
     }
     return word;
   }
+
+  public String removeFrontHypenCharacter(String word) {
+    if (word.length() > 0 && word.matches("^-.*")) {
+      word = word.replace("-", "");
+    }
+    return word;
+  }
 }

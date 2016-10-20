@@ -69,6 +69,7 @@ public class FileHandler {
             line = line.toLowerCase();
             line = tagRemover.removeBoldItalicFontOpenAndCloseTags(line);
 
+
             String[] words = line.split("\\s");
             for (String word : words) {
               word = tagRemover.removeBoldItalicFontOpenAndCloseTags(word);
@@ -76,6 +77,8 @@ public class FileHandler {
               word = characterRemover.removeFrontAndBackSpecialCharacters(word);
 
               word = characterRemover.removeOnlyHypenCharacter(word);
+
+              word = characterRemover.removeFrontHypenCharacter(word);
 
               if (word.isEmpty()) {
                 continue;
