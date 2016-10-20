@@ -123,10 +123,7 @@ public class ControlElement {
     }
     directoryDialog.setFilterPath(filterPath);
     String directoryPath = directoryDialog.open();
-    // if (directoryPath == null) {
-    // addLogMessage("No selected directory.");
-    // return;
-    // }
+
     String[] fileNames = collectSubtitleFileNames(directoryPath);
     WordData wordData = new WordData();
     wordData = FileHandler.getInstance().processFiles("", fileNames, wordData);
@@ -137,11 +134,12 @@ public class ControlElement {
       console.setText(wordData.getContents().toString());
       addLogMessage(wordData.getAfterProcessMessage());
     }
-
-
   }
 
   private String[] collectSubtitleFileNames(String directoryPath) {
+    if (directoryPath == null) {
+      return new String[] {};
+    }
     Collection<File> files = FileUtils.listFiles(new File(directoryPath), new RegexFileFilter("^(.*\\.srt?)"),
         DirectoryFileFilter.DIRECTORY);
     String[] fileNames = new String[files.size()];
