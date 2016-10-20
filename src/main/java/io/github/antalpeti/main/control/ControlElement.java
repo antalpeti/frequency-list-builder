@@ -1,9 +1,14 @@
 package io.github.antalpeti.main.control;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -118,11 +123,33 @@ public class ControlElement {
     }
     directoryDialog.setFilterPath(filterPath);
     String directoryPath = directoryDialog.open();
-    if (directoryPath == null) {
-      addLogMessage("No selected directory.");
+    // if (directoryPath == null) {
+    // addLogMessage("No selected directory.");
+    // return;
+    // }
+    String[] fileNames = collectSubtitleFileNames(directoryPath);
+    WordData wordData = new WordData();
+    wordData = FileHandler.getInstance().processFiles("", fileNames, wordData);
+    export.setEnabled(wordData.getWordFrequency().size() > 0);
+    if (wordData.getContents().toString().isEmpty()) {
+      addLogMessage("No selected file(s) or empty file(s).");
     } else {
-      addLogMessage(directoryPath);
+      console.setText(wordData.getContents().toString());
+      addLogMessage(wordData.getAfterProcessMessage());
     }
+
+
+  }
+
+  private String[] collectSubtitleFileNames(String directoryPath) {
+    Collection<File> files = FileUtils.listFiles(new File(directoryPath), new RegexFileFilter("^(.*\\.srt?)"),
+        DirectoryFileFilter.DIRECTORY);
+    String[] fileNames = new String[files.size()];
+    int index = 0;
+    for (File file : files) {
+      fileNames[index++] = file.toString();
+    }
+    return fileNames;
   }
 
   private void addLogMessage(String message) {
@@ -155,6 +182,10 @@ public class ControlElement {
     if (fileName == null) {
       return;
     }
+    writeContentToFile(fileName);
+  }
+
+  private void writeContentToFile(String fileName) {
     PrintWriter writer;
     try {
       writer = new PrintWriter(fileName, "UTF-8");
@@ -165,7 +196,7 @@ public class ControlElement {
         writer.println(line);
       }
       writer.close();
-      addLogMessage("Export to " + fileName + ".");
+      addLogMessage("Content write to " + fileName + ".");
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
