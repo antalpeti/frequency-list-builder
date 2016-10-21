@@ -1,56 +1,49 @@
-package io.github.antalpeti.main.control;
+package io.github.antalpeti.main.ui;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Collection;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import io.github.antalpeti.file.FileHandler;
 import io.github.antalpeti.file.WordData;
+import io.github.antalpeti.util.ControlUtil;
+import io.github.antalpeti.util.WordUtil;
 
-public class ControlElement {
-  private static ControlElement instance = null;
+public class Main {
+  private static Main instance = null;
+
   private Shell shell;
+  private Button export;
   private Text log;
   private Text console;
-  private Button files;
-  private Button export;
 
-  private ControlElement() {}
+  private ControlUtil controlUtil;
 
-  public static ControlElement getInstance() {
+
+  private Main() {}
+
+  public static Main getInstance() {
     if (instance == null) {
-      instance = new ControlElement();
+      instance = new Main();
     }
     return instance;
   }
 
   public void initButtons(Shell shell) {
     this.shell = shell;
+    controlUtil = ControlUtil.getInstance();
     initFilesButton();
     initDirectoryButton();
     initExportButton();
   }
 
   private void initFilesButton() {
-    files = new Button(shell, SWT.PUSH);
+    Button files = new Button(shell, SWT.PUSH);
     files.setText("File(s)");
     files.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     files.addSelectionListener(new SelectionAdapter() {
@@ -59,14 +52,8 @@ public class ControlElement {
         openFileDialog();
       }
     });
-    setFontSize(files, 20);
+    controlUtil.setFontSize(files, 20);
     shell.setDefaultButton(files);
-  }
-
-  private void setFontSize(Control control, int size) {
-    FontData[] fontData = control.getFont().getFontData();
-    fontData[0].setHeight(size);
-    control.setFont(new Font(control.getDisplay(), fontData[0]));
   }
 
   private void openFileDialog() {
@@ -89,14 +76,14 @@ public class ControlElement {
     String[] fileNames = fileDialog.getFileNames();
 
     WordData wordData = new WordData();
-    wordData = FileHandler.getInstance().processFiles(directoryPath, fileNames, wordData);
+    wordData = WordUtil.getInstance().processFiles(directoryPath, fileNames, wordData, log);
     export.setEnabled(wordData.getWordFrequency().size() > 0);
 
     if (wordData.getContents().toString().isEmpty()) {
-      addLogMessage("No selected file(s) or empty file(s).");
+      controlUtil.addLogMessage(log, "No selected file(s) or empty file(s).");
     } else {
       console.setText(wordData.getContents().toString());
-      addLogMessage(wordData.getAfterProcessMessage());
+      controlUtil.addLogMessage(log, wordData.getAfterProcessMessage());
     }
   }
 
@@ -110,7 +97,7 @@ public class ControlElement {
         openDirectoryDialog();
       }
     });
-    setFontSize(directory, 20);
+    controlUtil.setFontSize(directory, 20);
   }
 
   private void openDirectoryDialog() {
@@ -124,42 +111,33 @@ public class ControlElement {
     directoryDialog.setFilterPath(filterPath);
     String directoryPath = directoryDialog.open();
 
-    String[] fileNames = collectSubtitleFileNames(directoryPath);
+    String[] fileNames = controlUtil.collectSubtitleFileNamesRecursively(directoryPath);
     WordData wordData = new WordData();
-    wordData = FileHandler.getInstance().processFiles("", fileNames, wordData);
+    wordData = WordUtil.getInstance().processFiles("", fileNames, wordData, log);
     export.setEnabled(wordData.getWordFrequency().size() > 0);
     if (wordData.getContents().toString().isEmpty()) {
-      addLogMessage("No selected file(s) or empty file(s).");
+      controlUtil.addLogMessage(log, "No selected file(s) or empty file(s).");
     } else {
       console.setText(wordData.getContents().toString());
-      addLogMessage(wordData.getAfterProcessMessage());
+      controlUtil.addLogMessage(log, wordData.getAfterProcessMessage());
     }
   }
 
-  private String[] collectSubtitleFileNames(String directoryPath) {
-    if (directoryPath == null) {
-      return new String[] {};
-    }
-    Collection<File> files = FileUtils.listFiles(new File(directoryPath), new RegexFileFilter("^(.*\\.srt?)"),
-        DirectoryFileFilter.DIRECTORY);
-    String[] fileNames = new String[files.size()];
-    int index = 0;
-    for (File file : files) {
-      fileNames[index++] = file.toString();
-    }
-    return fileNames;
+  private void initExportButton() {
+    export = new Button(shell, SWT.PUSH);
+    export.setText("Export");
+    export.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    export.setEnabled(false);
+    export.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        openExportDialog();
+      }
+    });
+    controlUtil.setFontSize(export, 20);
   }
 
-  private void addLogMessage(String message) {
-    if (!log.getText().isEmpty()) {
-      log.append("\n");
-    }
-    if (message != null && !message.isEmpty()) {
-      log.append(message);
-    }
-  }
-
-  private void openFileDialogForExport() {
+  private void openExportDialog() {
     FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
     fileDialog.setText("Save");
     String[] filterNames = new String[] {"Comma Separated Values"};
@@ -180,42 +158,8 @@ public class ControlElement {
     if (fileName == null) {
       return;
     }
-    writeContentToFile(fileName);
+    controlUtil.writeContentToFile(fileName, console, log);
   }
-
-  private void writeContentToFile(String fileName) {
-    PrintWriter writer;
-    try {
-      writer = new PrintWriter(fileName, "UTF-8");
-      String content = console.getText();
-      String[] lines = content.split("\\n");
-      for (String line : lines) {
-        line = line.replaceAll("\\s", ",");
-        writer.println(line);
-      }
-      writer.close();
-      addLogMessage("Content write to " + fileName + ".");
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
-  }
-
-  private void initExportButton() {
-    export = new Button(shell, SWT.PUSH);
-    export.setText("Export");
-    export.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    export.setEnabled(false);
-    export.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        openFileDialogForExport();
-      }
-    });
-    setFontSize(export, 20);
-  }
-
 
   public void initTexts(Shell shell) {
     this.shell = shell;
@@ -230,7 +174,7 @@ public class ControlElement {
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     gridData.horizontalSpan = 3;
     console.setLayoutData(gridData);
-    setFontSize(console, 20);
+    controlUtil.setFontSize(console, 20);
   }
 
   private void initLog() {
@@ -240,6 +184,6 @@ public class ControlElement {
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     gridData.horizontalSpan = 3;
     log.setLayoutData(gridData);
-    setFontSize(log, 20);
+    controlUtil.setFontSize(log, 20);
   }
 }

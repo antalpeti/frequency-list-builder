@@ -4,7 +4,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import io.github.antalpeti.main.control.ControlElement;
+import io.github.antalpeti.main.ui.Main;
 
 public class Application {
 
@@ -15,7 +15,7 @@ public class Application {
     GridLayout gridLayout = new GridLayout(3, true);
 
     shell.setLayout(gridLayout);
-    ControlElement control = ControlElement.getInstance();
+    Main control = Main.getInstance();
     control.initButtons(shell);;
     control.initTexts(shell);
 
