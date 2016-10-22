@@ -12,7 +12,7 @@ import java.util.TreeSet;
 
 import org.eclipse.swt.widgets.Text;
 
-import io.github.antalpeti.constant.DirectionOrder;
+import io.github.antalpeti.constant.DirectionOrderConstant;
 import io.github.antalpeti.file.WordData;
 
 public class WordUtil {
@@ -33,7 +33,7 @@ public class WordUtil {
    * @param wordData the input words
    * @param directionOrder ascending or descending order and numbers of individual words
    */
-  public void createContents(WordData wordData, DirectionOrder directionOrder) {
+  public void createContents(WordData wordData, DirectionOrderConstant directionOrder) {
     int individualWordNumber = 0;;
     SortedSet<Entry<String, Integer>> entriesSortedByValues =
         WordUtil.getInstance().entriesSortedByValues(wordData.getWordFrequency(), directionOrder);
@@ -54,8 +54,8 @@ public class WordUtil {
    * @return the ordered map according the direction order
    */
   public <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map,
-      DirectionOrder orderDirection) {
-    final int orderMultiplier = DirectionOrder.DESCENDING.equals(orderDirection) ? -1 : 1;
+      DirectionOrderConstant orderDirection) {
+    final int orderMultiplier = DirectionOrderConstant.DESCENDING.equals(orderDirection) ? -1 : 1;
     SortedSet<Map.Entry<K, V>> sortedEntries = new TreeSet<Map.Entry<K, V>>(new Comparator<Map.Entry<K, V>>() {
       @Override
       public int compare(Map.Entry<K, V> entry1, Map.Entry<K, V> entry2) {
@@ -83,7 +83,7 @@ public class WordUtil {
         String pathname = directoryPath + separator + filename;
         processFile(pathname, wordData, log);
       }
-      WordUtil.getInstance().createContents(wordData, DirectionOrder.DESCENDING);
+      WordUtil.getInstance().createContents(wordData, DirectionOrderConstant.DESCENDING);
     }
     return wordData;
   }
@@ -103,6 +103,7 @@ public class WordUtil {
       file = new File(pathname);
       try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"))) {
         String line;
+        int startProcessedWordNumber = wordData.getProcessedWordNumber();
 
         TagRemover tagRemover = TagRemover.getInstance();
         CharacterRemover characterRemover = CharacterRemover.getInstance();
@@ -139,10 +140,12 @@ public class WordUtil {
             }
           }
         }
+        int processedWordNumber = wordData.getProcessedWordNumber() - startProcessedWordNumber;
+        ControlUtil.getInstance().addLogMessage(log, "File process ended.");
+        ControlUtil.getInstance().addLogMessage(log, "Processed words: " + processedWordNumber);
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
-    ControlUtil.getInstance().addLogMessage(log, "File process ended.");
   }
 }

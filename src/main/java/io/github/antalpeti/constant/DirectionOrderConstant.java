@@ -1,11 +1,14 @@
 package io.github.antalpeti.constant;
 
-public enum DirectionOrder {
+/**
+ * Constants related of the ordering.
+ */
+public enum DirectionOrderConstant {
   ASCENDING("asc"), DESCENDING("desc");
 
   private final String direction;
 
-  DirectionOrder(String order) {
+  DirectionOrderConstant(String order) {
     this.direction = order;
   }
 }

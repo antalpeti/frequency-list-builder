@@ -24,6 +24,10 @@ public class Main {
 
   private ControlUtil controlUtil;
 
+  private String directoryPath;
+
+  private String[] fileNames;
+
 
   private Main() {}
 
@@ -34,6 +38,11 @@ public class Main {
     return instance;
   }
 
+  /**
+   * Initialize the buttons.
+   * 
+   * @param shell the shell
+   */
   public void initButtons(Shell shell) {
     this.shell = shell;
     controlUtil = ControlUtil.getInstance();
@@ -42,6 +51,9 @@ public class Main {
     initExportButton();
   }
 
+  /**
+   * Initialize File(s) button.
+   */
   private void initFilesButton() {
     Button files = new Button(shell, SWT.PUSH);
     files.setText("File(s)");
@@ -50,12 +62,18 @@ public class Main {
       @Override
       public void widgetSelected(SelectionEvent e) {
         openFileDialog();
+        WordData wordData = processSelectedFiles();
+        setExportButtonEnabledState(wordData);
+        addFilesButtonLogMessage(wordData);
       }
     });
     controlUtil.setFontSize(files, 20);
     shell.setDefaultButton(files);
   }
 
+  /**
+   * Open the "Select File(s)" dialog.
+   */
   private void openFileDialog() {
     FileDialog fileDialog = new FileDialog(shell, SWT.OPEN | SWT.MULTI);
     fileDialog.setText("Select File(s)");
@@ -72,13 +90,36 @@ public class Main {
     fileDialog.setFilterExtensions(filterExtensions);
     fileDialog.setFilterPath(filterPath);
     fileDialog.open();
-    String directoryPath = fileDialog.getFilterPath();
-    String[] fileNames = fileDialog.getFileNames();
+    directoryPath = fileDialog.getFilterPath();
+    fileNames = fileDialog.getFileNames();
+  }
 
+  /**
+   * Process the content of selected files.
+   * 
+   * @return the related word data
+   */
+  private WordData processSelectedFiles() {
     WordData wordData = new WordData();
     wordData = WordUtil.getInstance().processFiles(directoryPath, fileNames, wordData, log);
-    export.setEnabled(wordData.getWordFrequency().size() > 0);
+    return wordData;
+  }
 
+  /**
+   * Enable or disable the export button.
+   * 
+   * @param wordData the related word data
+   */
+  private void setExportButtonEnabledState(WordData wordData) {
+    export.setEnabled(wordData.getWordFrequency().size() > 0 || !console.getText().isEmpty());
+  }
+
+  /**
+   * Add log message according to the File(s) button.
+   * 
+   * @param wordData the related word data
+   */
+  private void addFilesButtonLogMessage(WordData wordData) {
     if (wordData.getContents().toString().isEmpty()) {
       controlUtil.addLogMessage(log, "No selected file(s) or empty file(s).");
     } else {
@@ -87,6 +128,9 @@ public class Main {
     }
   }
 
+  /**
+   * Initialize Directory button.
+   */
   private void initDirectoryButton() {
     Button directory = new Button(shell, SWT.PUSH);
     directory.setText("Directory");
@@ -95,11 +139,17 @@ public class Main {
       @Override
       public void widgetSelected(SelectionEvent e) {
         openDirectoryDialog();
+        WordData wordData = processSelectedDirectory();
+        setExportButtonEnabledState(wordData);
+        addFilesButtonLogMessage(wordData);
       }
     });
     controlUtil.setFontSize(directory, 20);
   }
 
+  /**
+   * Open the "Select Directory" dialog.
+   */
   private void openDirectoryDialog() {
     DirectoryDialog directoryDialog = new DirectoryDialog(shell, SWT.OPEN | SWT.MULTI);
     directoryDialog.setText("Select Directory");
@@ -111,18 +161,23 @@ public class Main {
     directoryDialog.setFilterPath(filterPath);
     String directoryPath = directoryDialog.open();
 
-    String[] fileNames = controlUtil.collectSubtitleFileNamesRecursively(directoryPath);
-    WordData wordData = new WordData();
-    wordData = WordUtil.getInstance().processFiles("", fileNames, wordData, log);
-    export.setEnabled(wordData.getWordFrequency().size() > 0);
-    if (wordData.getContents().toString().isEmpty()) {
-      controlUtil.addLogMessage(log, "No selected file(s) or empty file(s).");
-    } else {
-      console.setText(wordData.getContents().toString());
-      controlUtil.addLogMessage(log, wordData.getAfterProcessMessage());
-    }
+    fileNames = controlUtil.collectSubtitleFileNamesRecursively(directoryPath);
   }
 
+  /**
+   * Process the content of selected directory.
+   * 
+   * @return the related word data
+   */
+  private WordData processSelectedDirectory() {
+    WordData wordData = new WordData();
+    wordData = WordUtil.getInstance().processFiles("", fileNames, wordData, log);
+    return wordData;
+  }
+
+  /**
+   * Initialize Export button.
+   */
   private void initExportButton() {
     export = new Button(shell, SWT.PUSH);
     export.setText("Export");
@@ -137,9 +192,12 @@ public class Main {
     controlUtil.setFontSize(export, 20);
   }
 
+  /**
+   * Open the "Export" dialog.
+   */
   private void openExportDialog() {
     FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
-    fileDialog.setText("Save");
+    fileDialog.setText("Export");
     String[] filterNames = new String[] {"Comma Separated Values"};
     String[] filterExtensions = new String[] {"*.csv"};
     String filterPath = "/";
@@ -161,12 +219,20 @@ public class Main {
     controlUtil.writeContentToFile(fileName, console, log);
   }
 
+  /**
+   * Initialize the texts views.
+   * 
+   * @param shell the shell
+   */
   public void initTexts(Shell shell) {
     this.shell = shell;
     initConsole();
     initLog();
   }
 
+  /**
+   * Initialize the console view.
+   */
   private void initConsole() {
     console = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     console.setBackground(console.getDisplay().getSystemColor(SWT.COLOR_BLACK));
@@ -177,6 +243,9 @@ public class Main {
     controlUtil.setFontSize(console, 20);
   }
 
+  /**
+   * Initialize the log view.
+   */
   private void initLog() {
     log = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     log.setBackground(log.getDisplay().getSystemColor(SWT.COLOR_GRAY));
@@ -187,3 +256,4 @@ public class Main {
     controlUtil.setFontSize(log, 20);
   }
 }
+

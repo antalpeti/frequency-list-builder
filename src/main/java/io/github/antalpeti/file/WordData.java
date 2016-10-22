@@ -16,11 +16,14 @@ public class WordData {
   }
 
   /**
+   * Create a summary message.
    * 
-   * @return
+   * @return the created summary message
    */
   public String getAfterProcessMessage() {
     StringBuilder message = new StringBuilder();
+    message.append("-----Summary-----");
+    message.append("\n");
     message.append("Found individual words: ");
     message.append(individualWordNumber);
     message.append("\n");
