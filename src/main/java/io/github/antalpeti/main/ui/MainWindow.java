@@ -10,12 +10,14 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import io.github.antalpeti.constant.ConfigConstant;
+import io.github.antalpeti.constant.PlatformConstant;
 import io.github.antalpeti.file.WordData;
 import io.github.antalpeti.util.ControlUtil;
 import io.github.antalpeti.util.WordUtil;
 
-public class Main {
-  private static Main instance = null;
+public class MainWindow {
+  private static MainWindow instance = null;
 
   private Shell shell;
   private Button export;
@@ -29,11 +31,11 @@ public class Main {
   private String[] fileNames;
 
 
-  private Main() {}
+  private MainWindow() {}
 
-  public static Main getInstance() {
+  public static MainWindow getInstance() {
     if (instance == null) {
-      instance = new Main();
+      instance = new MainWindow();
     }
     return instance;
   }
@@ -77,21 +79,39 @@ public class Main {
   private void openFileDialog() {
     FileDialog fileDialog = new FileDialog(shell, SWT.OPEN | SWT.MULTI);
     fileDialog.setText("Select File(s)");
+    String platform = SWT.getPlatform();
+    loadFilesButtonProperties(fileDialog, platform);
+    fileDialog.open();
+    directoryPath = fileDialog.getFilterPath();
+    fileNames = fileDialog.getFileNames();
+    storeFilesButtonProperties(platform);
+  }
+
+  private void loadFilesButtonProperties(FileDialog fileDialog, String platform) {
     String[] filterNames = new String[] {"Subtitle Files", "All Files (*)"};
     String[] filterExtensions = new String[] {"*.srt", "*"};
-    String filterPath = "/";
-    String platform = SWT.getPlatform();
-    if (platform.equals("win32")) {
+    String lastSelectedDirectory = controlUtil.loadConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY);
+    String filterPath =
+        lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY.getValue() : lastSelectedDirectory;
+    if (platform.equals(PlatformConstant.WIN32.getValue())) {
       filterNames = new String[] {"Subtitle Files", "All Files (*.*)"};
       filterExtensions = new String[] {"*.srt", "*.*"};
-      filterPath = "c:\\";
+      lastSelectedDirectory = controlUtil.loadConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY_WIN32);
+      filterPath =
+          lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY_WIN32.getValue() : lastSelectedDirectory;
     }
     fileDialog.setFilterNames(filterNames);
     fileDialog.setFilterExtensions(filterExtensions);
     fileDialog.setFilterPath(filterPath);
-    fileDialog.open();
-    directoryPath = fileDialog.getFilterPath();
-    fileNames = fileDialog.getFileNames();
+  }
+
+  private void storeFilesButtonProperties(String platform) {
+    if (platform.equals(PlatformConstant.WIN32.getValue())) {
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY_WIN32,
+          directoryPath);
+    } else {
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY, directoryPath);
+    }
   }
 
   /**
@@ -153,15 +173,36 @@ public class Main {
   private void openDirectoryDialog() {
     DirectoryDialog directoryDialog = new DirectoryDialog(shell, SWT.OPEN | SWT.MULTI);
     directoryDialog.setText("Select Directory");
-    String filterPath = "/";
     String platform = SWT.getPlatform();
-    if (platform.equals("win32")) {
-      filterPath = "c:\\";
+    loadDirectoryButtonLastSelectedDirectory(platform, directoryDialog);
+
+    String directoryPath = directoryDialog.open();
+    fileNames = controlUtil.collectSubtitleFileNamesRecursively(directoryPath);
+    storeDirectoryButtonLastSelectedDirectory(platform, directoryPath);
+  }
+
+  private void loadDirectoryButtonLastSelectedDirectory(String platform, DirectoryDialog directoryDialog) {
+    String lastSelectedDirectory =
+        ControlUtil.getInstance().loadConfigProperties(ConfigConstant.DIRECTORY_BUTTON_LAST_SELECTED_DIRECTORY);
+    String filterPath =
+        lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY.getValue() : lastSelectedDirectory;
+    if (platform.equals(PlatformConstant.WIN32.getValue())) {
+      lastSelectedDirectory =
+          ControlUtil.getInstance().loadConfigProperties(ConfigConstant.DIRECTORY_BUTTON_LAST_SELECTED_DIRECTORY_WIN32);
+      filterPath =
+          lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY_WIN32.getValue() : lastSelectedDirectory;
     }
     directoryDialog.setFilterPath(filterPath);
-    String directoryPath = directoryDialog.open();
+  }
 
-    fileNames = controlUtil.collectSubtitleFileNamesRecursively(directoryPath);
+  private void storeDirectoryButtonLastSelectedDirectory(String platform, String directoryPath) {
+    if (platform.equals(PlatformConstant.WIN32.getValue())) {
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.DIRECTORY_BUTTON_LAST_SELECTED_DIRECTORY_WIN32,
+          directoryPath);
+    } else {
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.DIRECTORY_BUTTON_LAST_SELECTED_DIRECTORY,
+          directoryPath);
+    }
   }
 
   /**
@@ -198,25 +239,45 @@ public class Main {
   private void openExportDialog() {
     FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
     fileDialog.setText("Export");
-    String[] filterNames = new String[] {"Comma Separated Values"};
-    String[] filterExtensions = new String[] {"*.csv"};
-    String filterPath = "/";
     String platform = SWT.getPlatform();
-    if (platform.equals("win32")) {
-      filterNames = new String[] {"Comma Separated Values"};
-      filterExtensions = new String[] {"*.csv"};
-      filterPath = "c:\\";
-    }
-    fileDialog.setFilterNames(filterNames);
-    fileDialog.setFilterExtensions(filterExtensions);
-    fileDialog.setFilterPath(filterPath);
-    fileDialog.setFileName("myfile");
+    loadExportButtonProperties(fileDialog, platform);
     String fileName = fileDialog.open();
 
     if (fileName == null) {
       return;
     }
     controlUtil.writeContentToFile(fileName, console, log);
+    storeExportButtonProperties(platform);
+  }
+
+  private void loadExportButtonProperties(FileDialog fileDialog, String platform) {
+    String[] filterNames = new String[] {"Comma Separated Values"};
+    String[] filterExtensions = new String[] {"*.csv"};
+    String lastSelectedDirectory = controlUtil.loadConfigProperties(ConfigConstant.EXPORT_BUTTON_LAST_SELECTED_DIRECTORY);
+    String filterPath =
+        lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY.getValue() : lastSelectedDirectory;
+    if (platform.equals(PlatformConstant.WIN32.getValue())) {
+      filterNames = new String[] {"Comma Separated Values"};
+      filterExtensions = new String[] {"*.csv"};
+      lastSelectedDirectory =
+          controlUtil.loadConfigProperties(ConfigConstant.EXPORT_BUTTON_LAST_SELECTED_DIRECTORY_WIN32);
+      filterPath =
+          lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY_WIN32.getValue() : lastSelectedDirectory;
+    }
+    fileDialog.setFilterNames(filterNames);
+    fileDialog.setFilterExtensions(filterExtensions);
+    fileDialog.setFilterPath(filterPath);
+    fileDialog.setFileName("export");
+  }
+
+  private void storeExportButtonProperties(String platform) {
+    if (platform.equals(PlatformConstant.WIN32.getValue())) {
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.EXPORT_BUTTON_LAST_SELECTED_DIRECTORY_WIN32,
+          directoryPath);
+    } else {
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.EXPORT_BUTTON_LAST_SELECTED_DIRECTORY,
+          directoryPath);
+    }
   }
 
   /**

@@ -1,10 +1,16 @@
 package io.github.antalpeti.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -13,6 +19,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
+
+import io.github.antalpeti.constant.ConfigConstant;
 
 public class ControlUtil {
   private static ControlUtil instance = null;
@@ -96,6 +104,68 @@ public class ControlUtil {
       e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
+    }
+  }
+
+  public String loadConfigProperties(ConfigConstant key) {
+    Properties properties = new Properties();
+    InputStream input = null;
+
+    try {
+      // String filename = "config.properties";
+      // input = getClass().getClassLoader().getResourceAsStream(filename);
+      input = new FileInputStream("config.properties");
+      if (input == null) {
+        // System.out.println("Sorry, unable to find " + filename);
+        return null;
+      }
+      // load a properties file
+      properties.load(input);
+
+      // get the property value and print it out
+      return properties.getProperty(key.getValue());
+
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    } finally {
+      if (input != null) {
+        try {
+          input.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return null;
+  }
+
+  public void storeConfigProperties(ConfigConstant key, String value) {
+    if (value == null) {
+      return;
+    }
+    Properties properties = new Properties();
+    OutputStream output = null;
+
+    try {
+
+      output = new FileOutputStream("config.properties");
+
+      // set the properties value
+      properties.setProperty(key.getValue(), value);
+
+      // save properties to project root folder
+      properties.store(output, null);
+
+    } catch (IOException io) {
+      io.printStackTrace();
+    } finally {
+      if (output != null) {
+        try {
+          output.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
     }
   }
 }
