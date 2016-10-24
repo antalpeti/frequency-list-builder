@@ -90,13 +90,15 @@ public class MainWindow {
   private void loadFilesButtonProperties(FileDialog fileDialog, String platform) {
     String[] filterNames = new String[] {"Subtitle Files", "All Files (*)"};
     String[] filterExtensions = new String[] {"*.srt", "*"};
-    String lastSelectedDirectory = controlUtil.loadConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY);
+    String lastSelectedDirectory =
+        controlUtil.loadConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY);
     String filterPath =
         lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY.getValue() : lastSelectedDirectory;
     if (platform.equals(PlatformConstant.WIN32.getValue())) {
       filterNames = new String[] {"Subtitle Files", "All Files (*.*)"};
       filterExtensions = new String[] {"*.srt", "*.*"};
-      lastSelectedDirectory = controlUtil.loadConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY_WIN32);
+      lastSelectedDirectory =
+          controlUtil.loadConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY_WIN32);
       filterPath =
           lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY_WIN32.getValue() : lastSelectedDirectory;
     }
@@ -110,7 +112,8 @@ public class MainWindow {
       ControlUtil.getInstance().storeConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY_WIN32,
           directoryPath);
     } else {
-      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY, directoryPath);
+      ControlUtil.getInstance().storeConfigProperties(ConfigConstant.FILES_BUTTON_LAST_SELECTED_DIRECTORY,
+          directoryPath);
     }
   }
 
@@ -246,6 +249,7 @@ public class MainWindow {
     if (fileName == null) {
       return;
     }
+    directoryPath = fileDialog.getFilterPath();
     controlUtil.writeContentToFile(fileName, console, log);
     storeExportButtonProperties(platform);
   }
@@ -253,7 +257,8 @@ public class MainWindow {
   private void loadExportButtonProperties(FileDialog fileDialog, String platform) {
     String[] filterNames = new String[] {"Comma Separated Values"};
     String[] filterExtensions = new String[] {"*.csv"};
-    String lastSelectedDirectory = controlUtil.loadConfigProperties(ConfigConstant.EXPORT_BUTTON_LAST_SELECTED_DIRECTORY);
+    String lastSelectedDirectory =
+        controlUtil.loadConfigProperties(ConfigConstant.EXPORT_BUTTON_LAST_SELECTED_DIRECTORY);
     String filterPath =
         lastSelectedDirectory == null ? PlatformConstant.ROOT_DIRECTORY.getValue() : lastSelectedDirectory;
     if (platform.equals(PlatformConstant.WIN32.getValue())) {

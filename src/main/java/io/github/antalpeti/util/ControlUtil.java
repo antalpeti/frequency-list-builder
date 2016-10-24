@@ -110,21 +110,19 @@ public class ControlUtil {
   public String loadConfigProperties(ConfigConstant key) {
     Properties properties = new Properties();
     InputStream input = null;
+    File file = null;
 
     try {
-      // String filename = "config.properties";
-      // input = getClass().getClassLoader().getResourceAsStream(filename);
-      input = new FileInputStream("config.properties");
-      if (input == null) {
-        // System.out.println("Sorry, unable to find " + filename);
-        return null;
-      }
+      file = new File("config.properties");
+      input = new FileInputStream(file);
+
       // load a properties file
       properties.load(input);
 
       // get the property value and print it out
       return properties.getProperty(key.getValue());
-
+    } catch (FileNotFoundException exception) {
+      System.out.println("The file " + file.getPath() + " was not found.");
     } catch (IOException ex) {
       ex.printStackTrace();
     } finally {
@@ -143,7 +141,7 @@ public class ControlUtil {
     if (value == null) {
       return;
     }
-    Properties properties = new Properties();
+    Properties properties = loadAllConfigProperties();
     OutputStream output = null;
 
     try {
@@ -167,5 +165,33 @@ public class ControlUtil {
         }
       }
     }
+  }
+
+  private Properties loadAllConfigProperties() {
+
+    Properties properties = new Properties();
+    InputStream input = null;
+    File file = null;
+
+    try {
+
+      file = new File("config.properties");
+      input = new FileInputStream(file);
+
+      properties.load(input);
+    } catch (FileNotFoundException exception) {
+      System.out.println("The file " + file.getPath() + " was not found.");
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    } finally {
+      if (input != null) {
+        try {
+          input.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return properties;
   }
 }
