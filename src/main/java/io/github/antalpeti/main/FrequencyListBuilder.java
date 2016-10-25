@@ -12,7 +12,7 @@ public class FrequencyListBuilder {
     Display display = new Display();
     Shell shell = new Shell(display);
     shell.setText("Frequency List Builder");
-    GridLayout gridLayout = new GridLayout(3, true);
+    GridLayout gridLayout = new GridLayout(4, true);
 
     shell.setLayout(gridLayout);
     MainWindow control = MainWindow.getInstance();

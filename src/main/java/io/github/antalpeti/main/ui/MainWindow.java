@@ -17,6 +17,7 @@ import io.github.antalpeti.util.ControlUtil;
 import io.github.antalpeti.util.WordUtil;
 
 public class MainWindow {
+
   private static MainWindow instance = null;
 
   private Shell shell;
@@ -51,6 +52,8 @@ public class MainWindow {
     initFilesButton();
     initDirectoryButton();
     initExportButton();
+    initConfigurationWindow();
+    initConfigButton();
   }
 
   /**
@@ -285,6 +288,45 @@ public class MainWindow {
     }
   }
 
+  ConfigurationWindow configShell;
+
+  /**
+   * Initalize Configuration window.
+   */
+  private void initConfigurationWindow() {
+    configShell = ConfigurationWindow.getInstance();
+  }
+
+  /**
+   * Initialize Configuration button.
+   */
+  private void initConfigButton() {
+    Button configuration = new Button(shell, SWT.PUSH);
+    configuration.setText("Configuration");
+    configuration.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+    // configuration.setImage(getImage("/icon/configuration.png"));
+    // configuration.setToolTipText("Configuration");
+
+    configuration.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        configShell.open();
+        // openFileDialog();
+        // WordData wordData = processSelectedFiles();
+        // setExportButtonEnabledState(wordData);
+        // addFilesButtonLogMessage(wordData);
+      }
+    });
+    controlUtil.setFontSize(configuration, 20);
+  }
+
+  // public static Image getImage(String imageName) {
+  // ImageData source = new ImageData(MainWindow.class.getResourceAsStream(imageName));
+  // ImageData mask = source.getTransparencyMask();
+  // Image image = new Image(null, source, mask);
+  // return image;
+  // }
+
   /**
    * Initialize the texts views.
    * 
@@ -304,7 +346,7 @@ public class MainWindow {
     console.setBackground(console.getDisplay().getSystemColor(SWT.COLOR_BLACK));
     console.setForeground(console.getDisplay().getSystemColor(SWT.COLOR_WHITE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    gridData.horizontalSpan = 3;
+    gridData.horizontalSpan = 4;
     console.setLayoutData(gridData);
     controlUtil.setFontSize(console, 20);
   }
@@ -317,7 +359,7 @@ public class MainWindow {
     log.setBackground(log.getDisplay().getSystemColor(SWT.COLOR_GRAY));
     log.setForeground(log.getDisplay().getSystemColor(SWT.COLOR_BLUE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    gridData.horizontalSpan = 3;
+    gridData.horizontalSpan = 4;
     log.setLayoutData(gridData);
     controlUtil.setFontSize(log, 20);
   }
