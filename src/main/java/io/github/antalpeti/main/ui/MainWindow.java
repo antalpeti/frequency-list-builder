@@ -304,8 +304,6 @@ public class MainWindow {
     Button configuration = new Button(shell, SWT.PUSH);
     configuration.setText("Configuration");
     configuration.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-    // configuration.setImage(getImage("/icon/configuration.png"));
-    // configuration.setToolTipText("Configuration");
 
     configuration.addSelectionListener(new SelectionAdapter() {
       @Override
@@ -319,13 +317,6 @@ public class MainWindow {
     });
     controlUtil.setFontSize(configuration, 20);
   }
-
-  // public static Image getImage(String imageName) {
-  // ImageData source = new ImageData(MainWindow.class.getResourceAsStream(imageName));
-  // ImageData mask = source.getTransparencyMask();
-  // Image image = new Image(null, source, mask);
-  // return image;
-  // }
 
   /**
    * Initialize the texts views.
