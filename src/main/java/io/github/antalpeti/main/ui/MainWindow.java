@@ -4,7 +4,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -19,8 +21,11 @@ import io.github.antalpeti.util.WordUtil;
 public class MainWindow {
 
   private static MainWindow instance = null;
+  Shell shell;
+  private Composite buttonsComposite;
+  private Composite consoleComposite;
+  private Composite logComposite;
 
-  private Shell shell;
   private Button export;
   private Text log;
   private Text console;
@@ -42,25 +47,53 @@ public class MainWindow {
   }
 
   /**
+   * Init MainWindow.
+   * 
+   * @param shell the shell
+   */
+  public void init(Shell shell) {
+    this.shell = shell;
+    initComposites();
+    initButtons();
+    initTexts();
+  }
+
+  /**
+   * Initialize the composites.
+   * 
+   * @param shell the shell
+   */
+  private void initComposites() {
+    buttonsComposite = new Composite(shell, SWT.NONE);
+    buttonsComposite.setLayout(new GridLayout(4, true));
+    buttonsComposite.setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
+    consoleComposite = new Composite(shell, SWT.NONE);
+    consoleComposite.setLayout(new GridLayout(1, true));
+    consoleComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    logComposite = new Composite(shell, SWT.NONE);
+    logComposite.setLayout(new GridLayout(1, true));
+    logComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+  }
+
+  /**
    * Initialize the buttons.
    * 
    * @param shell the shell
    */
-  public void initButtons(Shell shell) {
-    this.shell = shell;
+  private void initButtons() {
     controlUtil = ControlUtil.getInstance();
     initFilesButton();
     initDirectoryButton();
     initExportButton();
     initConfigurationWindow();
-    initConfigButton();
+    initConfigurationButton();
   }
 
   /**
    * Initialize File(s) button.
    */
   private void initFilesButton() {
-    Button files = new Button(shell, SWT.PUSH);
+    Button files = new Button(buttonsComposite, SWT.PUSH);
     files.setText("File(s)");
     files.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     files.addSelectionListener(new SelectionAdapter() {
@@ -73,7 +106,6 @@ public class MainWindow {
       }
     });
     controlUtil.setFontSize(files, 20);
-    shell.setDefaultButton(files);
   }
 
   /**
@@ -158,7 +190,7 @@ public class MainWindow {
    * Initialize Directory button.
    */
   private void initDirectoryButton() {
-    Button directory = new Button(shell, SWT.PUSH);
+    Button directory = new Button(buttonsComposite, SWT.PUSH);
     directory.setText("Directory");
     directory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     directory.addSelectionListener(new SelectionAdapter() {
@@ -226,7 +258,7 @@ public class MainWindow {
    * Initialize Export button.
    */
   private void initExportButton() {
-    export = new Button(shell, SWT.PUSH);
+    export = new Button(buttonsComposite, SWT.PUSH);
     export.setText("Export");
     export.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
     export.setEnabled(false);
@@ -300,8 +332,8 @@ public class MainWindow {
   /**
    * Initialize Configuration button.
    */
-  private void initConfigButton() {
-    Button configuration = new Button(shell, SWT.PUSH);
+  private void initConfigurationButton() {
+    Button configuration = new Button(buttonsComposite, SWT.PUSH);
     configuration.setText("Configuration");
     configuration.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
@@ -323,8 +355,7 @@ public class MainWindow {
    * 
    * @param shell the shell
    */
-  public void initTexts(Shell shell) {
-    this.shell = shell;
+  private void initTexts() {
     initConsole();
     initLog();
   }
@@ -333,11 +364,10 @@ public class MainWindow {
    * Initialize the console view.
    */
   private void initConsole() {
-    console = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+    console = new Text(consoleComposite, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     console.setBackground(console.getDisplay().getSystemColor(SWT.COLOR_BLACK));
     console.setForeground(console.getDisplay().getSystemColor(SWT.COLOR_WHITE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    gridData.horizontalSpan = 4;
     console.setLayoutData(gridData);
     controlUtil.setFontSize(console, 20);
   }
@@ -346,11 +376,10 @@ public class MainWindow {
    * Initialize the log view.
    */
   private void initLog() {
-    log = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+    log = new Text(logComposite, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
     log.setBackground(log.getDisplay().getSystemColor(SWT.COLOR_GRAY));
     log.setForeground(log.getDisplay().getSystemColor(SWT.COLOR_BLUE));
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    gridData.horizontalSpan = 4;
     log.setLayoutData(gridData);
     controlUtil.setFontSize(log, 20);
   }
