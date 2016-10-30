@@ -78,7 +78,7 @@ public class TagRemover {
    * @return true, if it has
    */
   private boolean hasFontColorOpenTag(String text) {
-    return text.length() > 9 && text.matches(".*(<font color=.{9}>)+.*");
+    return text.length() > 13 && text.matches(".*(<font color=.*>)+.*");
   }
 
   /**
@@ -88,7 +88,7 @@ public class TagRemover {
    * @return text without the tag(s)
    */
   private String removeFontColorOpenTag(String text) {
-    return text.replaceAll("(<font color=.{9}>)", TextConstant.EMPTY_STRING);
+    return text.replaceAll("(<font color=.*[^a-zA-Z]>)", TextConstant.EMPTY_STRING);
   }
 
   /**

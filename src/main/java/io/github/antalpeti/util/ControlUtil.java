@@ -101,6 +101,7 @@ public class ControlUtil {
       writer.close();
       addLogMessage(log, "Content write to " + fileName + ".");
     } catch (FileNotFoundException e) {
+      addLogMessage(log, e.getMessage());
       e.printStackTrace();
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();

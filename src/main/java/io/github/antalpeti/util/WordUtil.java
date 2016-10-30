@@ -118,15 +118,11 @@ public class WordUtil {
             line = line.toLowerCase();
             line = tagRemover.removeBoldItalicFontOpenAndCloseTags(line);
 
-            String[] words = line.split("\\s");
+            String[] words = line.split("[\\s,]");
             for (String word : words) {
               word = tagRemover.removeBoldItalicFontOpenAndCloseTags(word);
 
-              word = characterRemover.removeFrontAndBackSpecialCharacters(word);
-
-              word = characterRemover.removeOnlyHypenCharacter(word);
-
-              word = characterRemover.removeFrontHypenCharacter(word);
+              word = characterRemover.removeFrontAndBackNonLetterCharacters(word);
 
               if (word.isEmpty()) {
                 continue;

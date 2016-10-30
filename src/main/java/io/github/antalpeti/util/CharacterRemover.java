@@ -13,65 +13,39 @@ public class CharacterRemover {
   }
 
   /**
-   * Remove front and back special characters form the word.
+   * Remove front and back non letter characters form the word.
    * 
    * @param word the word
    * @return a filtered word
    */
-  public String removeFrontAndBackSpecialCharacters(String word) {
-    word = removeFrontSpecialCharacters(word);
-    word = removeBackSpecialCharacters(word);
+  public String removeFrontAndBackNonLetterCharacters(String word) {
+    word = removeFrontNonLetterCharacters(word);
+    word = removeBackNonLetterCharacters(word);
     return word;
   }
 
   /**
-   * Remove front special characters form the word.
+   * Remove front non letter characters form the word.
    * 
    * @param word the word
    * @return a filtered word
    */
-  public String removeFrontSpecialCharacters(String word) {
-    while (word.length() > 0 && word.matches("^[\"\\(\\[\\{]+.*")) {
+  public String removeFrontNonLetterCharacters(String word) {
+    while (word.length() > 0 && word.matches("^[^a-zA-Z]+.*")) {
       word = word.substring(1);
     }
     return word;
   }
 
   /**
-   * Remove back special characters form the word.
+   * Remove back non letter characters form the word.
    * 
    * @param word the word
    * @return a filtered word
    */
-  public String removeBackSpecialCharacters(String word) {
-    while (word.length() > 0 && word.matches(".*[\"\\)\\]\\}\\.,\\?!:$]+$")) {
+  public String removeBackNonLetterCharacters(String word) {
+    while (word.length() > 0 && word.matches(".*[^a-zA-Z]+$")) {
       word = word.substring(0, word.length() - 1);
-    }
-    return word;
-  }
-
-  /**
-   * Remove only hypen character form the word.
-   * 
-   * @param word the word
-   * @return a filtered word
-   */
-  public String removeOnlyHypenCharacter(String word) {
-    if (word.length() > 0 && word.matches("-+")) {
-      word = word.replaceAll("-", "");
-    }
-    return word;
-  }
-
-  /**
-   * Remove the fornt hypen character form the word.
-   * 
-   * @param word the word
-   * @return a filtered word
-   */
-  public String removeFrontHypenCharacter(String word) {
-    if (word.length() > 0 && word.matches("^-.*")) {
-      word = word.replace("-", "");
     }
     return word;
   }
