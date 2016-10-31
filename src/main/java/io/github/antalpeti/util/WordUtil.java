@@ -107,6 +107,7 @@ public class WordUtil {
 
         TagRemover tagRemover = TagRemover.getInstance();
         CharacterRemover characterRemover = CharacterRemover.getInstance();
+        WordPartRemover wordPartRemover = WordPartRemover.getInstance();
 
         while ((line = br.readLine()) != null) {
           line = line.trim();
@@ -123,6 +124,8 @@ public class WordUtil {
               word = tagRemover.removeBoldItalicFontOpenAndCloseTags(word);
 
               word = characterRemover.removeFrontAndBackNonLetterCharacters(word);
+
+              word = wordPartRemover.removeAfterFirstApostrophe(word);
 
               if (word.isEmpty()) {
                 continue;
